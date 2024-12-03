@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <tuple>
+#include <string>
 
 class BattleStates {
     public: //everything is public because it's a boardgame calculator, who cares about security?
@@ -26,6 +27,9 @@ class BattleStates {
     > _dice_rolls;
 
     // no constructor, we initialize all vectors empty, it's the subclasses that will fill them
+
+    // utility
+    std::string toString (); //returns
 
 };
 
