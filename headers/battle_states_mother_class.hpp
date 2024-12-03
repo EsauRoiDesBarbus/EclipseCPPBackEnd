@@ -22,8 +22,8 @@ class BattleStates {
     std::vector< //for each state, 
         std::vector< //we roll dice and for each possible result,
             std::tuple<float, std::vector<int>> //we have a probability of the result, plus a list of states this roll can lead to
-            >
-        > _dice_rolls; // _graph_edges [i] is the vector containing all the vertices vertex i can lead to
+        >
+    > _dice_rolls;
 
     // no constructor, we initialize all vectors empty, it's the subclasses that will fill them
 
