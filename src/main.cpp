@@ -11,5 +11,9 @@ int main(){
 
     cout << example.toString () << endl;
 
+    BattleStates example2 = CruiserAndIntVSIntBattleStates ();
+
+    cout << example2.toString () << endl;
+
     return 0;
 }

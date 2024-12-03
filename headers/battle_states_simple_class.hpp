@@ -12,5 +12,9 @@ class CruiserVSAncientBattleStates : public BattleStates {
     CruiserVSAncientBattleStates (); //this constructor will return the graph of a default cruiser vs Ancient A
 }; //hard coded example
 
+class CruiserAndIntVSIntBattleStates : public BattleStates {
+    public:
+    CruiserAndIntVSIntBattleStates (); //this constructor will return the graph of a default cruiser vs Ancient A
+}; //hard coded example
 
 #endif
