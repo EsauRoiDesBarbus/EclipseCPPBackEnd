@@ -7,7 +7,10 @@
 #include "battle_states_mother_class.hpp"
 
 
-class CruiserVSAncientBattleStates : public BattleStates {}; //hard coded example
+class CruiserVSAncientBattleStates : public BattleStates {
+    public:
+    CruiserVSAncientBattleStates (); //this constructor will return the graph of a default cruiser vs Ancient A
+}; //hard coded example
 
 
 #endif
