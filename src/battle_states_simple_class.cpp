@@ -17,6 +17,15 @@ CruiserVSAncientBattleStates::CruiserVSAncientBattleStates (){
     _states_where_attacker_wins = { 4, 5,10,11};
     _states_where_defender_wins = {12,13,14,15};
 
+    _who_is_firing = vector<int> (16, 1.0);
+    for (int i=0; i<8; i++) _who_is_firing[2*i] = -1.0; //states where ancient is firing
+
+    _state_bundles.resize (4); //states that need to be computed in bundle
+    _state_bundles[0] = make_tuple(0,1);
+    _state_bundles[1] = make_tuple(2,3);
+    _state_bundles[2] = make_tuple(6,7);
+    _state_bundles[3] = make_tuple(8,9);
+
     //hard coded graph (the tricky part)
     _dice_rolls.resize (16);
     for (int i=0; i<5; i++){
@@ -47,6 +56,12 @@ CruiserAndIntVSIntBattleStates::CruiserAndIntVSIntBattleStates () {
     // 18: * * 1 D, 19: * * 1 I, 20: * * 1 C Attacker wins (all states where defense is dead are condensed into one otherwis state space would be twice as big)
     _states_where_attacker_wins = {15,16,17};
     _states_where_defender_wins = {18,19,20};
+
+    _who_is_firing = vector<int> (21, 1.0);
+    for (int i=0; i<7; i++) _who_is_firing[3*i] = -1.0; //states where defender is firing
+
+
+
 
     //hard coded graph (the tricky part)
     _dice_rolls.resize (21);
