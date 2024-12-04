@@ -23,7 +23,6 @@ init:
 	@echo Initilizing...
 	mkdir -p $(DEPDIR)
 	mkdir -p $(OBJDIR)
-	mkdir -p results
 
 exe: all
 	./main
