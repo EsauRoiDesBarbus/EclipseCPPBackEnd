@@ -1,6 +1,7 @@
 
 #include "battle_states_mother_class.hpp"
 #include "battle_states_simple_class.hpp"
+#include "bellman_algorithm.hpp"
 
 using namespace std;
 #include <iostream>
@@ -8,12 +9,12 @@ using namespace std;
 int main(){
 
     BattleStates example = CruiserVSAncientBattleStates ();
+    //BattleStates example = CruiserAndIntVSIntBattleStates ();
 
     cout << example.toString () << endl;
 
-    BattleStates example2 = CruiserAndIntVSIntBattleStates ();
+    BattleResult dump = winChanceAndExpectancyCalculator (example);
 
-    cout << example2.toString () << endl;
 
     return 0;
 }

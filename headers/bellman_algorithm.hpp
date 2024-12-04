@@ -14,7 +14,8 @@ class BattleResult {
 };
 
 //BackwardForward Bellman algorithm to compute win chance and expectancy of each state, then return the result of the battle
-BattleResult winChanceAndExpectancyCalculator (BattleStates); 
+BattleResult winChanceAndExpectancyCalculator (BattleStates&); 
 
+std::vector<float> solveLP(std::vector<std::vector<float>>& A, std::vector<float>& b);
 
 #endif
