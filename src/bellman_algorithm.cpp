@@ -14,15 +14,17 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
     // then it uses that information to compute expectancy forward
 
     BattleResult results;
+    int nb_states = battle_states._who_is_firing.size(); //total number of states
 
-    
+    //store optimal allocation of each roll in a vector
     std::vector< //for each state, 
         std::vector< //we roll dice and for each possible result,
-            std::tuple<float, int> //we have a probability of the result, plus ONE optimal state to go to
+            int //we have ONE optimal state to go to
         >
-    > optimal_allocations;
+    > optimal_allocations (battle_states._dice_rolls.size ());
+    for (int state =0; state<nb_states;state++) optimal_allocations [state].resize (battle_states._dice_rolls[state].size());
 
-    int nb_states = battle_states._who_is_firing.size(); //total number of states
+    
 
 
     // backward win chance calculator
@@ -36,21 +38,16 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
     while (state>=0) { //backward loop
     cout << state << endl;
         //if attacker wins, win chance is 1 if defender wins, win chance is 0
-        if ((attacker_win_it>=0)&&(state==battle_states._states_where_attacker_wins[attacker_win_it])) {
+        if        ((attacker_win_it>=0)&&(state==battle_states._states_where_attacker_wins[attacker_win_it])) {
             attacker_win_it--;
             win_chance [state] = 1.0;
             state--;
-            continue;
-        }
-        if ((defender_win_it>=0)&&(state==battle_states._states_where_defender_wins[defender_win_it])) {
+        } else if ((defender_win_it>=0)&&(state==battle_states._states_where_defender_wins[defender_win_it])) {
             defender_win_it--;
             win_chance [state] = 0.0;
             state--;
-            continue;
-        }
-        // check if we have a contiguous bundle of states that need to be computed together
-        if ((bundle_it>=0)&&(state==get<1>(battle_states._state_bundles[bundle_it]))) {
-            // TODO
+        } else if ((bundle_it>=0)&&(state==get<1>(battle_states._state_bundles[bundle_it]))) {
+            // contiguous bundle of states that need to be computed together
             int start_state = get<0>(battle_states._state_bundles[bundle_it]);
             int close_state = get<1>(battle_states._state_bundles[bundle_it]);
             int bundle_size = close_state - start_state+1;
@@ -70,11 +67,16 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
                         int j = get<1>(battle_states._dice_rolls[start_state+i][roll])[0]-start_state;
                         A[i][j] = A[i][j] - proba;
 
+                        optimal_allocations [start_state+i][roll] = get<1>(battle_states._dice_rolls[start_state+i][roll])[0]; //there should only be one state anyway
+
                     } else {
-                        //TODO : range all possible states to find max win chance
-                        float max_win_chance = win_chance [get<1>(battle_states._dice_rolls[start_state+i][roll])[0]];
+                        //range all possible states to find max win chance
+                        int best_allocation = findBestAllocation (battle_states._who_is_firing[start_state+i], get<1>(battle_states._dice_rolls[start_state+i][roll]), win_chance);
+                        float max_win_chance = win_chance[best_allocation];
+
                         b[i] = b[i] + proba*max_win_chance;
 
+                        optimal_allocations [start_state+i][roll] = best_allocation; // store best allocation for expectancy
                     }
                 }
             }
@@ -97,14 +99,31 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
             // go over all states in the bundle
             state = start_state-1;
             bundle_it--;
-            continue;
-        } //TODO : lone state
+        } else {
+            // state that can be computed alone (e.g. round of missiles)
+            float state_win_chance = 0.0;
+            int nb_rolls = battle_states._dice_rolls[state].size();
+            for (int roll=0;roll<nb_rolls; roll++){
+                float proba = get<0>(battle_states._dice_rolls[state][roll]);
+
+                int best_allocation = findBestAllocation (battle_states._who_is_firing[state], get<1>(battle_states._dice_rolls[state][roll]), win_chance);
+                float max_win_chance = win_chance[best_allocation];
+                
+                state_win_chance = state_win_chance + proba*max_win_chance;
+
+                optimal_allocations [state][roll] = best_allocation; // store best allocation for expectancy
+            }
+            win_chance [state] = state_win_chance;
+            state--;
+        }
     }
     if (DEBUG) {
         cout << "win chance =";
         for (int i = 0; i < nb_states; ++i) cout << win_chance[i] << ",";
         cout << endl;
     }
+
+    results._attacker_win_chance = win_chance[0];
 
     
 
@@ -116,8 +135,23 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
 
 
     return results;
+}
 
-
+int findBestAllocation (int sign, std::vector<int>& allocations, std::vector<float>& win_chance) {
+    
+    //range all possible states to find max win chance. if sign = 1, then we maximize win chance for the attacker, if sign = -1 we minimize it
+    int best_allocation = allocations[0];
+    float max_win_chance = sign*win_chance [best_allocation];
+    int nb_allocations = allocations.size ();
+    for (int r=1; r<nb_allocations; r++) {
+        int allocation = allocations[r];
+        float allocation_win_chance = sign*win_chance [allocation];
+        if (allocation_win_chance>max_win_chance) {
+            max_win_chance = allocation_win_chance;
+            best_allocation = allocation;
+        }
+    }
+    return best_allocation;
 
 }
 
