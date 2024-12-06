@@ -14,7 +14,7 @@ class CruiserVSAncientBattleStates : public BattleStates {
 
 class CruiserAndIntVSIntBattleStates : public BattleStates {
     public:
-    CruiserAndIntVSIntBattleStates (); //this constructor will return the graph of a default cruiser vs Ancient A
+    CruiserAndIntVSIntBattleStates (int); //this constructor will return the graph of int + cru vs int, the argument is the computer (=hit chance) of the cruiser 
 }; //hard coded example
 
 #endif

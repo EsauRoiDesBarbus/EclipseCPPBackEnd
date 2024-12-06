@@ -45,7 +45,7 @@ CruiserVSAncientBattleStates::CruiserVSAncientBattleStates (){
     }
 }
 
-CruiserAndIntVSIntBattleStates::CruiserAndIntVSIntBattleStates () {
+CruiserAndIntVSIntBattleStates::CruiserAndIntVSIntBattleStates (int cruiser_computer) {
     // state index: damage taken by cruiser, damage taken by attack interceptor, damage taken by defense interceptor, ship that is firing (D = defense interceptor, I = attack interceptor, C=Cruiser)
     //  0: 0 0 0 D,  1: 0 0 0 I,  2: 0 0 0 C
     //  3: 0 1 0 D,  4: 0 1 0 I,  5: 0 1 0 C
@@ -54,14 +54,14 @@ CruiserAndIntVSIntBattleStates::CruiserAndIntVSIntBattleStates () {
     // 12: 2 0 0 D, 13: 2 0 0 I, 14: 2 0 0 C
     // 15: 2 1 0 D, 16: 2 1 0 I, 17: 2 1 0 C Defender wins
     // 18: * * 1 D, 19: * * 1 I, 20: * * 1 C Attacker wins (all states where defense is dead are condensed into one otherwis state space would be twice as big)
-    _states_where_attacker_wins = {15,16,17};
-    _states_where_defender_wins = {18,19,20};
+    _states_where_attacker_wins = {18,19,20};
+    _states_where_defender_wins = {15,16,17};
 
     _who_is_firing = vector<int> (21, 1.0);
     for (int i=0; i<7; i++) _who_is_firing[3*i] = -1.0; //states where defender is firing
 
-
-
+    _state_bundles.resize (5); //states that need to be computed in bundle
+    for (int i =0; i<5; i++) _state_bundles[i] = make_tuple(3*i,3*i+2);
 
     //hard coded graph (the tricky part)
     _dice_rolls.resize (21);
@@ -77,6 +77,8 @@ CruiserAndIntVSIntBattleStates::CruiserAndIntVSIntBattleStates () {
             _dice_rolls[3*i+1].resize (2);
             _dice_rolls[3*i+1][0] = {float (5.0/6.0), {3*i+2}};
             _dice_rolls[3*i+1][1] = {float (1.0/6.0), {20}};
+
+            _dice_rolls[3*i  ][1] = {float (1.0/6.0), {3*i+4}};
         } else {
             _dice_rolls[3*i+1].resize (1);
             _dice_rolls[3*i+1][0] = {float (1.0), {3*i+2}};
@@ -86,12 +88,16 @@ CruiserAndIntVSIntBattleStates::CruiserAndIntVSIntBattleStates () {
         if (i<4) {
             //attack cruiser is alive
             _dice_rolls[3*i+2].resize (2);
-            _dice_rolls[3*i+2][0] = {float (4.0/6.0), {3*i}};
-            _dice_rolls[3*i+2][1] = {float (2.0/6.0), {18}};
+            _dice_rolls[3*i+2][0] = {float ((5.0-cruiser_computer)/6.0), {3*i}};
+            _dice_rolls[3*i+2][1] = {float ((1.0+cruiser_computer)/6.0), {18}};
+
+            _dice_rolls[3*i  ][1] = {float (1.0/6.0), {3*i+7}};
         } else {
             _dice_rolls[3*i+2].resize (1);
             _dice_rolls[3*i+2][0] = {float (1.0), {3*i}};
         }
+
+        if ((i%2==0)and(i<4)) _dice_rolls[3*i  ][1] = {float (1.0/6.0), {3*i+4, 3*i+7}};
     }
 
 }
