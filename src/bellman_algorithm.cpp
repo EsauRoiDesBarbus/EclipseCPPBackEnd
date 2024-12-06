@@ -30,13 +30,18 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
     // backward win chance calculator
     vector<float> win_chance(nb_states, -1.0); //-1 means uninitialized
 
-    int attacker_win_it = battle_states._states_where_attacker_wins.size()-1;
-    int defender_win_it = battle_states._states_where_defender_wins.size()-1;
-    int bundle_it = battle_states._state_bundles.size ()-1;
+
+    int nb_attacker_wins = battle_states._states_where_attacker_wins.size();
+    int nb_defender_wins = battle_states._states_where_defender_wins.size();
+    int nb_bundles = battle_states._state_bundles.size ();
+
+    int attacker_win_it = nb_attacker_wins-1;
+    int defender_win_it = nb_defender_wins-1;
+    int bundle_it = nb_bundles-1;
 
     int state = nb_states-1;
     while (state>=0) { //backward loop
-    cout << state << endl;
+        cout << state << endl;
         //if attacker wins, win chance is 1 if defender wins, win chance is 0
         if        ((attacker_win_it>=0)&&(state==battle_states._states_where_attacker_wins[attacker_win_it])) {
             attacker_win_it--;
@@ -130,8 +135,98 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
 
     // forward expectancy calculator
     vector<float> expectancy(nb_states, 0.0);
+    expectancy[0] = 1.0; // battle start at state 0
 
+    attacker_win_it = 0;
+    defender_win_it = 0;
+    bundle_it = 0;
+    state = 0;
+    while (state<nb_states) {
+        cout << state << "state\n";
+        //if attacker wins, win chance is 1 if defender wins, win chance is 0
+        if        ((attacker_win_it<nb_attacker_wins)&&(state==battle_states._states_where_attacker_wins[attacker_win_it])) {
+            attacker_win_it++;
+            // TODO add surviving ships to probability
+            state++;
+        } else if ((defender_win_it<nb_defender_wins)&&(state==battle_states._states_where_defender_wins[defender_win_it])) {
+            defender_win_it++;
+            // TODO add surviving ships to probability 
+            state++;
+        } else if ((bundle_it<nb_bundles)&&(state==get<0>(battle_states._state_bundles[bundle_it]))) {
+            // contiguous bundle of states that need to be computed together
+            int start_state = get<0>(battle_states._state_bundles[bundle_it]);
+            int close_state = get<1>(battle_states._state_bundles[bundle_it]);
+            int bundle_size = close_state - start_state+1;
 
+            // step 1 compute expectancy in the bundle by writing it as LP Ax = b
+            vector<vector<float>> A (bundle_size, vector<float>(bundle_size, 0.0));
+            vector<float> b(bundle_size, 0.0);
+
+            for (int i=0; i<bundle_size; ++i) {
+                A[i][i] = 1.0; //identity diagonal
+                b[i] = expectancy [start_state+i];
+            }
+
+            for (int i=0; i<bundle_size; ++i) {
+                int nb_rolls = battle_states._dice_rolls[start_state+i].size();
+                for (int roll=0;roll<nb_rolls; roll++){
+                    int best_allocation = optimal_allocations [start_state+i][roll];
+                    if (best_allocation<=close_state){
+                        // this state loops to another state of the bundle, must be written in A
+                        float proba = get<0>(battle_states._dice_rolls[start_state+i][roll]);
+                        int j = best_allocation-start_state;
+                        A[j][i]+= -proba; //the formula of expectancy is the other way around 
+                    } 
+                }
+            }
+
+            if (DEBUG) {
+                cout << "b =";
+                for (int i = 0; i < bundle_size; ++i) cout << b[i] << ",";
+                cout << endl;
+
+                cout << "A =";
+                for (int i = 0; i < bundle_size; ++i) for (int j = 0; j < bundle_size; ++j) cout << A[i][j] << ",";
+                cout << endl;
+            }
+
+            vector<float> x = solveLP (A, b);
+            for (int i=0; i<bundle_size; ++i) {
+                expectancy [start_state+i] = x[i];
+            }
+
+            // propagate expectancy outside the bundle
+            for (int i=0; i<bundle_size; ++i) {
+                int nb_rolls = battle_states._dice_rolls[start_state+i].size();
+                for (int roll=0;roll<nb_rolls; roll++){
+                    int best_allocation = optimal_allocations [start_state+i][roll];
+                    if (best_allocation>close_state){
+                        float proba = get<0>(battle_states._dice_rolls[start_state+i][roll]);
+                        
+                        expectancy[best_allocation]+= proba*expectancy[start_state+i];
+                    } 
+                }
+            }
+            state = close_state+1;
+            bundle_it++;
+        } else {
+            // propagate expectancy of states
+            int nb_rolls = battle_states._dice_rolls[state].size();
+            for (int roll=0;roll<nb_rolls; roll++){
+                float proba = get<0>(battle_states._dice_rolls[state][roll]);
+
+                int best_allocation = optimal_allocations [state][roll];
+                
+                expectancy[best_allocation]+= proba*expectancy[state];
+            }
+            state++;
+        }
+    }
+    if (DEBUG) {
+        cout << "expectancy =";
+        for (int i = 0; i < nb_states; ++i) cout << expectancy[i] << ",";
+        cout << endl;
+    }
 
 
     return results;
