@@ -3,8 +3,9 @@
 #include <vector>
 #include <iostream>
 #include <cmath>
+#include <sstream>
 
-#define DEBUG true
+#define DEBUG false
 
 using namespace std;
 
@@ -41,7 +42,6 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
 
     int state = nb_states-1;
     while (state>=0) { //backward loop
-        cout << state << endl;
         //if attacker wins, win chance is 1 if defender wins, win chance is 0
         if        ((attacker_win_it>=0)&&(state==battle_states._states_where_attacker_wins[attacker_win_it])) {
             attacker_win_it--;
@@ -87,6 +87,8 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
             }
 
             if (DEBUG) {
+                cout << "state = "<< state << endl;
+
                 cout << "b =";
                 for (int i = 0; i < bundle_size; ++i) cout << b[i] << ",";
                 cout << endl;
@@ -134,6 +136,11 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
 
 
     // forward expectancy calculator
+    int nb_type_ships = battle_states._live_ships[0].size();
+    results._ship_survival_chance.resize (nb_type_ships);
+    for (int i=0; i<nb_type_ships; ++i) results._ship_survival_chance[i].resize (battle_states._live_ships[0][i]); //give the initial number of ships
+
+
     vector<float> expectancy(nb_states, 0.0);
     expectancy[0] = 1.0; // battle start at state 0
 
@@ -142,15 +149,22 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
     bundle_it = 0;
     state = 0;
     while (state<nb_states) {
-        cout << state << "state\n";
         //if attacker wins, win chance is 1 if defender wins, win chance is 0
         if        ((attacker_win_it<nb_attacker_wins)&&(state==battle_states._states_where_attacker_wins[attacker_win_it])) {
             attacker_win_it++;
-            // TODO add surviving ships to probability
+            // add surviving ships to results
+            for (int i=0; i<nb_type_ships; ++i) {
+                int ships_of_that_type_alive = battle_states._live_ships[state][i];
+                for (int j=0; j<ships_of_that_type_alive; ++j) results._ship_survival_chance[i][j] += expectancy[state];
+            }
             state++;
         } else if ((defender_win_it<nb_defender_wins)&&(state==battle_states._states_where_defender_wins[defender_win_it])) {
             defender_win_it++;
-            // TODO add surviving ships to probability 
+            // add surviving ships to probability
+            for (int i=0; i<nb_type_ships; ++i) {
+                int ships_of_that_type_alive = battle_states._live_ships[state][i];
+                for (int j=0; j<ships_of_that_type_alive; ++j) results._ship_survival_chance[i][j] += expectancy[state];
+            }
             state++;
         } else if ((bundle_it<nb_bundles)&&(state==get<0>(battle_states._state_bundles[bundle_it]))) {
             // contiguous bundle of states that need to be computed together
@@ -181,6 +195,8 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
             }
 
             if (DEBUG) {
+                cout << "state = "<< state << endl;
+                
                 cout << "b =";
                 for (int i = 0; i < bundle_size; ++i) cout << b[i] << ",";
                 cout << endl;
@@ -248,6 +264,17 @@ int findBestAllocation (int sign, std::vector<int>& allocations, std::vector<flo
     }
     return best_allocation;
 
+}
+
+string BattleResult::toString () {
+    stringstream output;
+
+    output << "Attacker win chance = " << _attacker_win_chance << ", surviving ship probability= ";
+    for (int i=0; i<_ship_survival_chance.size (); ++i){
+        for (int j=0; j<_ship_survival_chance[i].size (); ++j) output << _ship_survival_chance[i][j] << ", ";
+    }
+    
+    return output.str ();
 }
 
 
