@@ -50,6 +50,8 @@ vector<RollUnallocated> Ship::listRolls (int nb_ships, std::vector<int> shields)
 
     // shields MUST be in decreasing order 
     int nb_shields = shields.size();
+    int nb_die_results = 1; //not counting misses, there is at least 1 total hit result
+
     std::vector<int> how_many_faces_hit (nb_shields, 1); //there is always at least 1 chance out of 6 to hit
     for (int shield=0; shield<nb_shields; shield++) {
         for (int face=0; face<4; face++) {
@@ -58,13 +60,23 @@ vector<RollUnallocated> Ship::listRolls (int nb_ships, std::vector<int> shields)
         }
     }
     std::vector<int> chance_of_hits_and_partial_hits (nb_shields+1, 0);
+    std::vector<bool> same_chance_as_the_one_before (nb_shields);
     chance_of_hits_and_partial_hits[0] = 6-how_many_faces_hit[nb_shields-1]; //full miss
     chance_of_hits_and_partial_hits[1] = how_many_faces_hit [0]; //full hit
-    for (int shield=1; shield<nb_shields; shield++) chance_of_hits_and_partial_hits[shield+1] = how_many_faces_hit[shield] - how_many_faces_hit [shield-1]; //partial hit
+    for (int shield=1; shield<nb_shields; shield++) {
+        chance_of_hits_and_partial_hits[shield+1] = how_many_faces_hit[shield] - how_many_faces_hit [shield-1]; //partial hit
+        if (chance_of_hits_and_partial_hits[shield+1]!=0){
+            same_chance_as_the_one_before[shield]=false;
+            nb_die_results++;
+        } else {
+            same_chance_as_the_one_before[shield]=true;
+        }
+    }
+    
 
     vector<RollUnallocated> rolls; // output, should be a vector with all possible rolls
 
-    int nb_die_results = shields.size (); //should be at least 1
+    
     int nb_outcomes_4_dice = 4*nb_die_results;
 
     vector<int> all_outcomes (nb_outcomes_4_dice, 0); // * hits, (* partial hits), ** hits, (** partial hits), *** hits etc...
@@ -76,8 +88,14 @@ vector<RollUnallocated> Ship::listRolls (int nb_ships, std::vector<int> shields)
 
     // compute the log of the probability of each outcome
     vector<float> proba_result_log(1+nb_die_results);//first element is miss
-    for (int result=0; result < nb_die_results+1; result++) {
-        proba_result_log[result]= log(chance_of_hits_and_partial_hits[result]) - log(6);
+    
+    proba_result_log[0]= log(chance_of_hits_and_partial_hits[0]) - log(6);
+    int result =1;
+    for (int shield=0; shield < nb_shields; shield++) {
+        if (same_chance_as_the_one_before[shield]==false) {
+            proba_result_log[result]= log(chance_of_hits_and_partial_hits[shield+1]) - log(6);
+            result++;
+        }
     }
 
     float total_proba =0.0; //for DEBUG, should be almost equal to 1.0
@@ -105,12 +123,19 @@ vector<RollUnallocated> Ship::listRolls (int nb_ships, std::vector<int> shields)
 
         total_proba += proba;
 
-        for (int die_result=0; die_result<nb_die_results; die_result++) {
-            Damage dam({all_outcomes[                 die_result],
-                        all_outcomes[nb_die_results  +die_result],
-                        all_outcomes[nb_die_results*2+die_result],
-                        all_outcomes[nb_die_results*3+die_result]});
-            roll._damages.push_back(dam);
+        int die_result=0;
+        for (int shield=0; shield<nb_shields; shield++) {
+            if (same_chance_as_the_one_before[shield]==false) {
+                Damage dam({all_outcomes[                 die_result],
+                            all_outcomes[nb_die_results  +die_result],
+                            all_outcomes[nb_die_results*2+die_result],
+                            all_outcomes[nb_die_results*3+die_result]});
+                roll._damages.push_back(dam);
+                die_result++;
+            } else {
+                Damage dam({0,0,0,0});
+                roll._damages.push_back(dam);
+            }
         }
 
         rolls.push_back (roll);
@@ -120,10 +145,10 @@ vector<RollUnallocated> Ship::listRolls (int nb_ships, std::vector<int> shields)
             cout << "(";
             for (int outcome=0; outcome<nb_outcomes_4_dice; outcome++) cout << all_outcomes[outcome] << ",";
             cout << ")";
-            cout << " roll proba= " << roll._proba << " damage=";
+            cout << " roll damage=";
             int nb_damages = roll._damages.size ();
             for (int i=0; i<nb_damages; i++) cout<<" ("<<roll._damages[i][0]<<","<<roll._damages[i][1]<<","<<roll._damages[i][2]<<","<<roll._damages[i][3]<<")";
-            cout << endl;
+            cout << " proba= " << roll._proba << endl;
         }
 
 

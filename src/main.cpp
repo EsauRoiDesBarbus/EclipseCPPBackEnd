@@ -22,7 +22,7 @@ int main(){
     vector<RollUnallocated> rolls = cruiser.listRolls (1, {2,0});
 
     //rolls = two_dreads_with_plasma_turret.listRolls (1, {1,0});
-    rolls = two_dreads_with_plasma_turret.listRolls (2, {2,0});
+    rolls = two_dreads_with_plasma_turret.listRolls (2, {2,1,0,0});
 
     
 
