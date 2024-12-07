@@ -8,6 +8,8 @@
 #include <tuple>
 #include <string>
 
+#include "roll.hpp"
+
 class BattleStates {
     public: //everything is public because it's a boardgame calculator, who cares about security?
 
@@ -30,7 +32,7 @@ class BattleStates {
     // graph edges (the tricky part)
     std::vector< //for each state, 
         std::vector< //we roll dice and for each possible result,
-            std::tuple<float, std::vector<int>> //we have a probability of the result, plus a list of states this roll can lead to
+            Roll //we have a probability of the result, plus a list of states this roll can lead to
         >
     > _dice_rolls;
 

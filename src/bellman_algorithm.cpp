@@ -66,17 +66,17 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
             for (int i=0; i<bundle_size; ++i) {
                 int nb_rolls = battle_states._dice_rolls[start_state+i].size();
                 for (int roll=0;roll<nb_rolls; roll++){
-                    float proba = get<0>(battle_states._dice_rolls[start_state+i][roll]);
-                    if (get<1>(battle_states._dice_rolls[start_state+i][roll])[0]<=close_state){
+                    float proba = battle_states._dice_rolls[start_state+i][roll]._proba;
+                    if (battle_states._dice_rolls[start_state+i][roll]._allocations[0]<=close_state){
                         // this state loops to another state of the bundle, must be written in A
-                        int j = get<1>(battle_states._dice_rolls[start_state+i][roll])[0]-start_state;
+                        int j = battle_states._dice_rolls[start_state+i][roll]._allocations[0]-start_state;
                         A[i][j] = A[i][j] - proba;
 
-                        optimal_allocations [start_state+i][roll] = get<1>(battle_states._dice_rolls[start_state+i][roll])[0]; //there should only be one state anyway
+                        optimal_allocations [start_state+i][roll] = battle_states._dice_rolls[start_state+i][roll]._allocations[0]; //there should only be one state anyway
 
                     } else {
                         //range all possible states to find max win chance
-                        int best_allocation = findBestAllocation (battle_states._who_is_firing[start_state+i], get<1>(battle_states._dice_rolls[start_state+i][roll]), win_chance);
+                        int best_allocation = findBestAllocation (battle_states._who_is_firing[start_state+i], battle_states._dice_rolls[start_state+i][roll]._allocations, win_chance);
                         float max_win_chance = win_chance[best_allocation];
 
                         b[i] = b[i] + proba*max_win_chance;
@@ -111,9 +111,9 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
             float state_win_chance = 0.0;
             int nb_rolls = battle_states._dice_rolls[state].size();
             for (int roll=0;roll<nb_rolls; roll++){
-                float proba = get<0>(battle_states._dice_rolls[state][roll]);
+                float proba = battle_states._dice_rolls[state][roll]._proba;
 
-                int best_allocation = findBestAllocation (battle_states._who_is_firing[state], get<1>(battle_states._dice_rolls[state][roll]), win_chance);
+                int best_allocation = findBestAllocation (battle_states._who_is_firing[state], battle_states._dice_rolls[state][roll]._allocations, win_chance);
                 float max_win_chance = win_chance[best_allocation];
                 
                 state_win_chance = state_win_chance + proba*max_win_chance;
@@ -187,7 +187,7 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
                     int best_allocation = optimal_allocations [start_state+i][roll];
                     if (best_allocation<=close_state){
                         // this state loops to another state of the bundle, must be written in A
-                        float proba = get<0>(battle_states._dice_rolls[start_state+i][roll]);
+                        float proba = battle_states._dice_rolls[start_state+i][roll]._proba;
                         int j = best_allocation-start_state;
                         A[j][i]+= -proba; //the formula of expectancy is the other way around 
                     } 
@@ -217,7 +217,7 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
                 for (int roll=0;roll<nb_rolls; roll++){
                     int best_allocation = optimal_allocations [start_state+i][roll];
                     if (best_allocation>close_state){
-                        float proba = get<0>(battle_states._dice_rolls[start_state+i][roll]);
+                        float proba = battle_states._dice_rolls[start_state+i][roll]._proba;
                         
                         expectancy[best_allocation]+= proba*expectancy[start_state+i];
                     } 
@@ -229,7 +229,7 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
             // propagate expectancy of states
             int nb_rolls = battle_states._dice_rolls[state].size();
             for (int roll=0;roll<nb_rolls; roll++){
-                float proba = get<0>(battle_states._dice_rolls[state][roll]);
+                float proba = battle_states._dice_rolls[state][roll]._proba;
 
                 int best_allocation = optimal_allocations [state][roll];
                 
@@ -270,8 +270,10 @@ string BattleResult::toString () {
     stringstream output;
 
     output << "Attacker win chance = " << _attacker_win_chance << ", surviving ship probability= ";
-    for (int i=0; i<_ship_survival_chance.size (); ++i){
-        for (int j=0; j<_ship_survival_chance[i].size (); ++j) output << _ship_survival_chance[i][j] << ", ";
+    int nb_types = _ship_survival_chance.size ();
+    for (int i=0; i<nb_types; ++i){
+        int ships_of_that_type= _ship_survival_chance[i].size ();
+        for (int j=0; j<ships_of_that_type; ++j) output << _ship_survival_chance[i][j] << ", ";
     }
     
     return output.str ();

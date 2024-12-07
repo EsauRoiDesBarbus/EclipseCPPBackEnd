@@ -30,10 +30,10 @@ string BattleStates::toString () {
         // Iterate through each element in the inner vector
         int nb_rolls = _dice_rolls[i].size();
         for (int j = 0; j < nb_rolls; ++j) {
-            output << " chance " << to_string(get<0>(_dice_rolls[i][j])) << " to state ";
-            int nb_possible_states = get<1>(_dice_rolls[i][j]).size();
+            output << " chance " << to_string(_dice_rolls[i][j]._proba) << " to state ";
+            int nb_possible_states = _dice_rolls[i][j]._allocations.size();
             for (int k = 0; k < nb_possible_states; ++k) {
-                output << to_string(get<1>(_dice_rolls[i][j])[k]);
+                output << to_string(_dice_rolls[i][j]._allocations[k]);
                 if (k < nb_possible_states - 1) {
                     output << ",";
                 }
