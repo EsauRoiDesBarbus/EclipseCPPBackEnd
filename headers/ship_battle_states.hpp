@@ -28,23 +28,16 @@ class ShipBattleStates: public BattleStates {
     std::vector<Ship*> _ships_by_initiative;
     void initialSort (); //sort Ships by shield and initiative
 
-    // state correspondance
-    std::vector<int> _state_conversion_vector;
-    void initializeStateVector ();
-    int toState (std::vector<int>); //transforms initiative + ship state array into a single state index by dot product
+    // state correspondance between state (index in battle state class) and extended class (initiative + ship state array)
+    std::vector<int> StateToExtendedState (int);
+    int ExtendedStateToState (std::vector<int>);
 
-    void initializeStateBundles ();
-    void initializeStatesWhereWins ();
-    void initializeWhoIsFiring ();
-    void initializeLiveShips ();
+    // all state info :_whos_is_firing, _state_bundles, _states_where_attacker_wins, _states_where_defender_wins, _live_ships
+    void initializeStateInfo ();
 
     // compute graph edges 
     void initializeDiceRolls (); 
 
-    // sort ships by shield 
-    // compute initiative order
-    // build index <-> initiative + ship state correspondance
-    // transform RollUnallocated into Roll and save them in _dice_rolls
 
     void initialize (); //does all previous states in order
 

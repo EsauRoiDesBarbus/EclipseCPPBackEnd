@@ -3,6 +3,7 @@
 #include "battle_states_simple_class.hpp"
 #include "bellman_algorithm.hpp"
 #include "ship.hpp"
+#include "ship_battle_states.hpp"
 
 using namespace std;
 #include <iostream>
@@ -15,14 +16,25 @@ int main(){
     //BattleResult result = winChanceAndExpectancyCalculator (example);
     //cout << result.toString () << endl;
 
-    Ship two_dreads_with_plasma_turret (2, DRE, 1, 2, 1, 2, {2,2,0,0,0});
-    Ship interceptor (1, INT, 3, 0, 0, 0, {1,0,0,0,0});
-    Ship cruiser (1, CRU, 2, 1, 1, 0, {1,0,0,0,0});
-
-    vector<RollUnallocated> rolls = cruiser.listRolls (1, {2,0});
-
+    //Ship two_dreads_with_plasma_turret (2, DRE, 1, 2, 1, 2, {2,2,0,0,0});
+    //Ship interceptor (1, INT, 3, 0, 0, 0, {1,0,0,0,0});
+    //Ship cruiser (1, CRU, 2, 1, 1, 0, {1,0,0,0,0});
+    //vector<RollUnallocated> rolls = cruiser.listRolls (1, {2,0});
     //rolls = two_dreads_with_plasma_turret.listRolls (1, {1,0});
-    rolls = two_dreads_with_plasma_turret.listRolls (2, {2,1,0,0});
+    //rolls = two_dreads_with_plasma_turret.listRolls (2, {2,1,0,0});
+
+    Ship interceptor (1, INT, 3, 0, 0, 0, {1,0,0,0,0});
+    Ship turbo_cruis (1, CRU, 3, 1, 1, 0, {1,0,0,0,0});
+    Ship rho_cruiser (1, CRU, 2, 1, 1, 1, {1,0,0,0,0});
+    Ship dreadnought (1, DRE, 1, 2, 1, 0, {2,0,0,0,0});
+
+    BattleModifiers att, def;
+
+    ShipBattleStates battle ({&turbo_cruis}, att, {&dreadnought, &rho_cruiser, &interceptor}, def);
+
+
+
+
 
     
 
