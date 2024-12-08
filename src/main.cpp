@@ -23,14 +23,15 @@ int main(){
     //rolls = two_dreads_with_plasma_turret.listRolls (1, {1,0});
     //rolls = two_dreads_with_plasma_turret.listRolls (2, {2,1,0,0});
 
-    Ship interceptor (1, INT, 3, 0, 0, 0, {1,0,0,0,0});
-    Ship turbo_cruis (1, CRU, 3, 1, 1, 0, {1,0,0,0,0});
-    Ship rho_cruiser (1, CRU, 2, 1, 1, 1, {1,0,0,0,0});
-    Ship dreadnought (1, DRE, 1, 2, 1, 0, {2,0,0,0,0});
+    shared_ptr<Ship> interceptor = make_shared<Ship> (Ship(1, INT, 3, 0, 0, 0, {1,0,0,0,0}));
+    shared_ptr<Ship> turbo_cruis = make_shared<Ship> (Ship(1, CRU, 3, 1, 1, 0, {1,0,0,0,0}));
+    shared_ptr<Ship> rho_cruiser = make_shared<Ship> (Ship(1, CRU, 2, 1, 1, 1, {1,0,0,0,0}));
+    shared_ptr<Ship> dreadnought = make_shared<Ship> (Ship(1, DRE, 1, 2, 1, 0, {2,0,0,0,0}));
 
     BattleModifiers att, def;
 
-    ShipBattleStates battle ({&turbo_cruis}, att, {&dreadnought, &rho_cruiser, &interceptor}, def);
+    ShipBattleStates battle ({turbo_cruis}, att, {dreadnought, rho_cruiser, interceptor}, def);
+    cout << battle.toString () << endl;
 
 
 

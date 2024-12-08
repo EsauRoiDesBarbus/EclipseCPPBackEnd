@@ -8,24 +8,35 @@
 #include "ship.hpp"
 
 #include <vector>
+#include <memory>
 
 struct BattleModifiers {
     bool _is_npc; //to know if that side follows npc allocation rule
     bool _antimatter_splitter; //true if that side has this tech
 };
 
+struct ShipWrapper {
+    std::shared_ptr<Ship> _ship_ptr;
+    int _side; // 1 if attacker, -1 if defender
+    int _place_first_vector; // where it is in _attacker_ships or _defender_ship
+    std::shared_ptr<Ship> operator-> () {return _ship_ptr;}
+    //ShipWrapper (std::shared_ptr<Ship> a, int b, int c): _ship_ptr(a), _side(b), _place_first_vector(c) {}
+};
+
 class ShipBattleStates: public BattleStates {
     public:
     // battle info
-    std::vector<Ship*> _attacker_ships;
-    std::vector<Ship*> _defender_ships;
+    std::vector<std::shared_ptr<Ship>> _attacker_ships;
+    std::vector<std::shared_ptr<Ship>> _defender_ships;
 
     BattleModifiers _attacker_bonus; //TODO
     BattleModifiers _defender_bonus; //TODO
 
 
     // pre-treatment
-    std::vector<Ship*> _ships_by_initiative;
+    std::vector<ShipWrapper> _both_ships_by_initiative;
+    std::vector<ShipWrapper> _attacker_ships_by_shield;
+    std::vector<ShipWrapper> _defender_ships_by_shield;
     void initialSort (); //sort Ships by shield and initiative
 
     // state correspondance between state (index in battle state class) and extended class (initiative + ship state array)
@@ -42,7 +53,7 @@ class ShipBattleStates: public BattleStates {
     void initialize (); //does all previous states in order
 
     // constructor
-    ShipBattleStates (std::vector<Ship*>, BattleModifiers, std::vector<Ship*>, BattleModifiers);
+    ShipBattleStates (std::vector<std::shared_ptr<Ship>>, BattleModifiers, std::vector<std::shared_ptr<Ship>>, BattleModifiers);
 };
 
 
