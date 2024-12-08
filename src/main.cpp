@@ -33,8 +33,12 @@ int main(){
 
     //ShipBattleStates battle ({turbo_cruis}, att, {dreadnought, rho_cruiser, interceptor}, def);
     //ShipBattleStates battle ({dice_master}, att, {rho_cruiser, interceptor, interceptor}, def); //damage clock test
-    ShipBattleStates battle ({interceptor}, att, {rho_cruiser}, def);
+    //ShipBattleStates battle ({interceptor}, att, {rho_cruiser}, def);
+    ShipBattleStates battle ({rho_cruiser}, att, {dreadnought}, def);
     cout << battle.toString () << endl;
+
+    BattleResult result = winChanceAndExpectancyCalculator (battle);
+    cout << result.toString () << endl;
 
 
 

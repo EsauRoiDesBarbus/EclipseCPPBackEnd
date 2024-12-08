@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define DEBUG true
+#define DEBUG false
 
 
 
@@ -271,8 +271,6 @@ void ShipBattleStates::initializeDiceRolls () {
     _state_bundles.resize(0);
     _dice_rolls.resize (total_states);
 
-    int start_state=0, close_state=0; //buffer for bundles
-
     // create shield arrays
     int nb_attacker_ships = _attacker_ships_by_shield.size();
     int nb_defender_ships = _defender_ships_by_shield.size();
@@ -304,48 +302,65 @@ void ShipBattleStates::initializeDiceRolls () {
     }
 
     //range all states
+    int nb_attacker_wins = _states_where_attacker_wins.size();
+    int nb_defender_wins = _states_where_defender_wins.size();
+    int attacker_win_it =0;
+    int defender_win_it =0;
     for (int state=0; state<total_states; state++){
-        int round = state_clock[0];
-        int player = _both_ships_by_initiative[round%nb_ships]._side; //1 if attacker, -1 if defender
-        int alive  = _both_ships_by_initiative[round%nb_ships]->countLiveShips (state_clock[1+(round%nb_ships)]);
+        // check if victory so we avoid unnecessary computations
+        if        ((attacker_win_it<nb_attacker_wins)&&(state==_states_where_attacker_wins[attacker_win_it])) {
+            attacker_win_it++;
+        } else if ((defender_win_it<nb_defender_wins)&&(state==_states_where_defender_wins[defender_win_it])) {
+            defender_win_it++;
+        } else {
+            int round = state_clock[0];
+            int player = _both_ships_by_initiative[round%nb_ships]._side; //1 if attacker, -1 if defender
+            int alive  = _both_ships_by_initiative[round%nb_ships]->countLiveShips (state_clock[1+(round%nb_ships)]);
 
-        vector<RollUnallocated> rolls_unallocated = big_table_of_rolls[round][alive];
-        int nb_rolls = rolls_unallocated.size ();
-        _dice_rolls[state].resize(nb_rolls); //output
-        for (int roll=0; roll<nb_rolls; roll++) {
-            // copy proba
-            _dice_rolls[state][roll]._proba = rolls_unallocated[roll]._proba;
+            vector<RollUnallocated> rolls_unallocated = big_table_of_rolls[round][alive];
+            int nb_rolls = rolls_unallocated.size ();
+            _dice_rolls[state].resize(nb_rolls); //output
+            for (int roll=0; roll<nb_rolls; roll++) {
+                // copy proba
+                _dice_rolls[state][roll]._proba = rolls_unallocated[roll]._proba;
 
-            //allocate damage and deduce end states (the hard part)
-            DamageClock damage_clock (rolls_unallocated[roll]);
-            bool finished = false;
-            //cout << rolls_unallocated[roll].toString() <<endl;;
-            while (finished==false) {
-                //cout << damage_clock.toString() << endl;
-                finished = damage_clock.increment ();
+                //allocate damage and deduce end states (the hard part)
+                DamageClock damage_clock (rolls_unallocated[roll]);
+                bool finished = false;
+                //cout << rolls_unallocated[roll].toString() <<endl;;
+                while (finished==false) {
+                    //cout << damage_clock.toString() << endl;
+                    finished = damage_clock.increment ();
+                }
+                // compute all possible extended states
+                vector<vector<int>> all_extended_states;
+                if (player==ATTACKER) all_extended_states = initializeDiceRollsHelper (state_clock, damage_clock, _defender_ships_by_shield);
+                else                  all_extended_states = initializeDiceRollsHelper (state_clock, damage_clock, _attacker_ships_by_shield);
+
+                // increase round number (after a ship fires, the next ship in initiative fires)
+                // if the last ship is firing his canon, we go back to the start of the canon round, that is 2*nb_ships-1->nb_ships
+                if (state_clock[0]<2*nb_ships-1) all_extended_states[0] = {state_clock[0]+1};
+                else                             all_extended_states[0] = {        nb_ships};
+
+                // transform into an array of states TODO range all possibilities, we only do one here
+                vector<int> extended_state (1+nb_ships);
+                for (int i=0; i<1+nb_ships;i++) extended_state[i] = all_extended_states[i][0];
+
+                int next_state = ExtendedStateToState (extended_state);
+
+                if (next_state<state) _state_bundles.push_back ({next_state, state}); //TODO better bundle method for regen
+
+                _dice_rolls[state][roll]._allocations.push_back(next_state);
             }
-            // compute all possible extended states
-            vector<vector<int>> all_extended_states;
-            if (player==ATTACKER) all_extended_states = initializeDiceRollsHelper (state_clock, damage_clock, _defender_ships_by_shield);
-            else                  all_extended_states = initializeDiceRollsHelper (state_clock, damage_clock, _attacker_ships_by_shield);
-
-            // increase round number (after a ship fires, the next ship in initiative fires)
-            // if the last ship is firing his canon, we go back to the start of the canon round, that is 2*nb_ships-1->nb_ships
-            if (state_clock[0]<2*nb_ships-1) all_extended_states[0] = {state_clock[0]+1};
-            else                             all_extended_states[0] = {        nb_ships};
-
-            // transform into an array of states TODO range all possibilities, we only do one here
-            vector<int> extended_state (1+nb_ships);
-            for (int i=0; i<1+nb_ships;i++) extended_state[i] = all_extended_states[i][0];
-
-            int next_state = ExtendedStateToState (extended_state);
-
-            //TODO update bundle info if that state is before the current state
-
-            _dice_rolls[state][roll]._allocations.push_back(next_state);
         }
         state_clock.increment ();
     }
+    if (DEBUG){
+        cout << "_state_bundles=";
+        for (int i=0; i<int(_state_bundles.size ()); i++) cout << "("<<get<0>(_state_bundles[i]) << "," << get<1>(_state_bundles[i]) <<")";
+        cout <<endl;
+    }
+     
 }
 
 
