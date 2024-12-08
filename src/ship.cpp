@@ -27,7 +27,7 @@ Ship::Ship (int n, int t, int i, int h, int c, int s, Weapons can):
 }
 
 int Ship::totalStates () {
-    return (_number*(_hull+1));
+    return (_number*(_hull+2));
 }
 
 int Ship::countLiveShips (int state) {
