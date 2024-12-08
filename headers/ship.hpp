@@ -13,6 +13,9 @@
 #define DRE 1000000
 #define SBA 100
 
+#define CANONS 1
+#define MISSILES 0
+
 struct Weapons {
     std::array <int, 5> _dice; // number of yellow dice, orange dice, blue dice, pink dice
 
@@ -47,7 +50,8 @@ class Ship {
     int countLiveShips (int state); //return number of ships that are alive at that state
     std::vector<int> takeHits (int, Damage); //returns all possible states that can be reached from taking that damage
 
-    std::vector<RollUnallocated> listRolls (int nb_ships, std::vector<int> shields); //takes the number of ships as argument as it influences results
+    std::vector<RollUnallocated> listRolls (int nb_ships, int which_weapon, std::vector<int> shields); //takes the number of ships as argument as it influences results
+    // which_weapon is either CANONS or MISSILES
 
 };
 

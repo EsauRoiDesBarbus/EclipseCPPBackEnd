@@ -38,12 +38,12 @@ vector<int> Ship::takeHits (int state, Damage damage) {
     // in this implementation, we retrun only one state
     // TODO: take overkill into account
     // idea : check if overkill, then check for attribution with 0 overflow, then allocation with 1 overflow etc...
-    return {state - damage[0] - damage[1]*2 - damage[2]*3- damage[3]*4}; //it's a vector of 1 element
+    return {min(state +damage[0] +damage[1]*2 +damage[2]*3 +damage[3]*4, _number*(_hull+1))}; //it's a vector of 1 element
 }
 
 
 
-vector<RollUnallocated> Ship::listRolls (int nb_ships, std::vector<int> shields) {
+vector<RollUnallocated> Ship::listRolls (int nb_ships, int which_weapon, std::vector<int> shields) {
     // range all possible results of dice using a clock like system
 
     // step 1: see which result of die hit or miss
@@ -81,8 +81,10 @@ vector<RollUnallocated> Ship::listRolls (int nb_ships, std::vector<int> shields)
 
     vector<int> all_outcomes (nb_outcomes_4_dice, 0); // * hits, (* partial hits), ** hits, (** partial hits), *** hits etc...
 
-    array <int, 5> total_dice = _canons.totalDice (nb_ships); //by default we consider each die a miss
-    array <int, 5> total_misses = total_dice;
+    array <int, 5> total_dice;
+    if (which_weapon==CANONS) total_dice =  _canons.totalDice (nb_ships);
+    else                      total_dice =_missiles.totalDice (nb_ships);
+    array <int, 5> total_misses = total_dice; //by default we consider each die a miss
 
     
 
