@@ -17,15 +17,15 @@ struct BattleModifiers {
 class ShipBattleStates: public BattleStates {
     public:
     // battle info
-    std::vector<Ship&> _attacker_ships;
-    std::vector<Ship&> _defender_ships;
+    std::vector<Ship*> _attacker_ships;
+    std::vector<Ship*> _defender_ships;
 
     BattleModifiers _attacker_bonus; //TODO
     BattleModifiers _defender_bonus; //TODO
 
 
     // pre-treatment
-    std::vector<Ship&> _ships_by_initiative;
+    std::vector<Ship*> _ships_by_initiative;
     void initialSort (); //sort Ships by shield and initiative
 
     // state correspondance
@@ -49,7 +49,7 @@ class ShipBattleStates: public BattleStates {
     void initialize (); //does all previous states in order
 
     // constructor
-    ShipBattleStates (std::vector<Ship&>, BattleModifiers, std::vector<Ship&>, BattleModifiers);
+    ShipBattleStates (std::vector<Ship*>, BattleModifiers, std::vector<Ship*>, BattleModifiers);
 };
 
 
