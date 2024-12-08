@@ -27,10 +27,13 @@ int main(){
     shared_ptr<Ship> turbo_cruis = make_shared<Ship> (Ship(1, CRU, 3, 1, 1, 0, {1,0,0,0,0}));
     shared_ptr<Ship> rho_cruiser = make_shared<Ship> (Ship(1, CRU, 2, 1, 1, 1, {1,0,0,0,0}));
     shared_ptr<Ship> dreadnought = make_shared<Ship> (Ship(1, DRE, 1, 2, 1, 0, {2,0,0,0,0}));
+    shared_ptr<Ship> dice_master = make_shared<Ship> (Ship(1, DRE, 1, 0, 1, 0, {2,2,0,1,0}));
 
     BattleModifiers att, def;
 
-    ShipBattleStates battle ({turbo_cruis}, att, {dreadnought, rho_cruiser, interceptor}, def);
+    //ShipBattleStates battle ({turbo_cruis}, att, {dreadnought, rho_cruiser, interceptor}, def);
+    //ShipBattleStates battle ({dice_master}, att, {rho_cruiser, interceptor, interceptor}, def); //damage clock test
+    ShipBattleStates battle ({interceptor}, att, {rho_cruiser}, def);
     cout << battle.toString () << endl;
 
 

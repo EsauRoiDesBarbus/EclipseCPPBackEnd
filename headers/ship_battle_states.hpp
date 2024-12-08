@@ -10,15 +10,19 @@
 #include <vector>
 #include <memory>
 
+#define ATTACKER  1
+#define DEFENDER -1
+
 struct BattleModifiers {
     bool _is_npc; //to know if that side follows npc allocation rule
     bool _antimatter_splitter; //true if that side has this tech
 };
 
-struct ShipWrapper {
+struct ShipWrapper { //class to add info relative to other ships
     std::shared_ptr<Ship> _ship_ptr;
     int _side; // 1 if attacker, -1 if defender
     int _place_first_vector; // where it is in _attacker_ships or _defender_ship
+    int _place_in_initiative_order; //0 has the most initiative, 1 the second most etc
     std::shared_ptr<Ship> operator-> () {return _ship_ptr;}
     //ShipWrapper (std::shared_ptr<Ship> a, int b, int c): _ship_ptr(a), _side(b), _place_first_vector(c) {}
 };
@@ -48,7 +52,7 @@ class ShipBattleStates: public BattleStates {
 
     // compute graph edges 
     void initializeDiceRolls (); 
-
+    
 
     void initialize (); //does all previous states in order
 
