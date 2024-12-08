@@ -1,6 +1,7 @@
 #include "battle_states_simple_class.hpp"
 
 #include <sstream>
+#include <iostream>
 
 using namespace std;
 
@@ -12,16 +13,16 @@ string BattleStates::toString () {
     int nb_states = _dice_rolls.size();
 
     // Iterate through each vector in the outer vector
-    int attacker_win_it = 0;
-    int defender_win_it = 0;
+    int attacker_win_it = 0, nb_attacker_wins = _states_where_attacker_wins.size ();
+    int defender_win_it = 0, nb_defender_wins = _states_where_defender_wins.size ();
     for (int i = 0; i < nb_states; ++i) {
         output << "state " << to_string(i);
-        if (i==_states_where_attacker_wins[attacker_win_it]) {
+        if ((attacker_win_it<nb_attacker_wins)and(i==_states_where_attacker_wins[attacker_win_it])) {
             attacker_win_it++;
             output << " attacker wins\n";
             continue;
         }
-        if (i==_states_where_defender_wins[defender_win_it]) {
+        if ((defender_win_it<nb_defender_wins)and(i==_states_where_defender_wins[defender_win_it])) {
             defender_win_it++;
             output << " defender wins\n";
             continue;
