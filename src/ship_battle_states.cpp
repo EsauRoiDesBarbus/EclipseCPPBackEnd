@@ -257,6 +257,8 @@ void ShipBattleStates::initializeStateInfo () {
 }
 
 int increaseRound (int current_round, int nb_ships) {
+    // increase round number (after a ship fires, the next ship in initiative fires)
+    // if the last ship is firing his canon, we go back to the start of the canon round, that is 2*nb_ships-1->nb_ships
     int next_round;
     if (current_round<2*nb_ships-1) next_round = {current_round+1};
     else                            next_round = {       nb_ships};
@@ -288,8 +290,7 @@ Roll allocateRoll(StateClock& state_clock, RollUnallocated& roll_unallocated, ve
             all_extended_states[1+ship_by_init] = ships_by_shield[ship_by_shield]->takeHits (state_clock[ship_by_init+1], damage_clock[ship_by_shield]);
         }
 
-        // increase round number (after a ship fires, the next ship in initiative fires)
-        // if the last ship is firing his canon, we go back to the start of the canon round, that is 2*nb_ships-1->nb_ships
+        // increase round number
         all_extended_states[0] = {increaseRound(state_clock[0], nb_ships)};
 
         // transform into an array of states TODO range all possibilities, we only do one here
@@ -306,6 +307,51 @@ Roll allocateRoll(StateClock& state_clock, RollUnallocated& roll_unallocated, ve
     sort                              (output._allocations.begin(), output._allocations.end());
     vector<int>::iterator last= unique(output._allocations.begin(), output._allocations.end());
     output._allocations.erase         (last                       , output._allocations.end());
+
+    return output;
+}
+
+Roll allocateNPCRoll(StateClock& state_clock, RollUnallocated& roll_unallocated, vector<ShipWrapper>& ships_by_shield) {
+    // follows NPC hit allocation rules using a score system
+    Roll output;
+    // get info
+    int nb_ships = state_clock.size()-1;
+    // copy proba
+    output._proba = roll_unallocated._proba;
+
+    //allocate damage and deduce end states (the hard part)
+    DamageClock damage_clock (roll_unallocated);
+    bool finished = false;
+    unsigned long int max_score = 0;
+    int next_state = -1; 
+    while (finished==false) { //range all possible damage allocation of that roll
+        // compute all possible extended states
+        vector<int> extended_state (1+nb_ships);
+
+        // initialize with current clock values
+        for (int i=0; i<1+nb_ships; i++) extended_state[i]=state_clock[i];
+        // increase round number
+        extended_state[0] = increaseRound(state_clock[0], nb_ships);
+
+        unsigned long int score = 0;
+
+        int nb_enemy_ships = ships_by_shield.size();
+        for (int ship_by_shield=0; ship_by_shield<nb_enemy_ships; ship_by_shield++) {
+            int ship_by_init = ships_by_shield[ship_by_shield]._place_in_initiative_order;
+            // state of the ship is state_clock[ship_by_init+1], allocated damage is damage_clock[ship_by_shield]
+            StateNPCWrapper state_and_score = ships_by_shield[ship_by_shield]->takeNPCHits (state_clock[ship_by_init+1], damage_clock[ship_by_shield]);
+
+            extended_state[1+ship_by_init] = state_and_score._state;
+            score += state_and_score._npc_score;
+        }
+        if (score >= max_score){
+            // this state is a better fit for NPC
+            next_state = state_clock.extendedStateToState (extended_state);
+            max_score = score;
+        }
+        finished = damage_clock.increment();
+    }
+    output._allocations.push_back(next_state);
 
     return output;
 }
@@ -379,14 +425,16 @@ void ShipBattleStates::initializeDiceRolls () {
             for (int roll=0; roll<nb_rolls; roll++) { //range all possible roll
 
                 vector<ShipWrapper> ships_by_shield; //attacker or defender depending on ship side
-                if (player==ATTACKER) ships_by_shield = _defender_ships_by_shield;
-                else                  ships_by_shield = _attacker_ships_by_shield;
+                BattleModifiers bonus;
+                if (player==ATTACKER) {ships_by_shield = _defender_ships_by_shield; bonus = _attacker_bonus;}
+                else                  {ships_by_shield = _attacker_ships_by_shield; bonus = _defender_bonus;}
 
                 // find all possible allocations of damage of that roll
-                _dice_rolls[state][roll] = allocateRoll(state_clock, rolls_unallocated[roll], ships_by_shield);
+                if (bonus._is_npc) _dice_rolls[state][roll] = allocateNPCRoll(state_clock, rolls_unallocated[roll], ships_by_shield);
+                else               _dice_rolls[state][roll] = allocateRoll   (state_clock, rolls_unallocated[roll], ships_by_shield);
 
                 // if there are multiple elements, that means we can reach multiple states, hence remove the no damage state (which will be first in the list)
-                if ((_dice_rolls[state][roll]._allocations.size()>=2)and(_dice_rolls[state][roll]._allocations[0]=no_damage_state))
+                if ((_dice_rolls[state][roll]._allocations.size()>=2)and(_dice_rolls[state][roll]._allocations[0]==no_damage_state))
                     _dice_rolls[state][roll]._allocations.erase (_dice_rolls[state][roll]._allocations.begin());
 
             }
@@ -402,8 +450,8 @@ void ShipBattleStates::initializeDiceRolls () {
     }
 }
 
-ShipBattleStates::ShipBattleStates (std::vector<shared_ptr<Ship>> att_ships, BattleModifiers, std::vector<shared_ptr<Ship>> def_ships, BattleModifiers): 
-    _attacker_ships(att_ships), _defender_ships(def_ships) {
+ShipBattleStates::ShipBattleStates (std::vector<shared_ptr<Ship>> att_ships, BattleModifiers att, std::vector<shared_ptr<Ship>> def_ships, BattleModifiers def): 
+    _attacker_ships(att_ships), _defender_ships(def_ships), _attacker_bonus(att), _defender_bonus(def) {
     initialSort ();
     initializeStateInfo ();
     initializeDiceRolls ();
