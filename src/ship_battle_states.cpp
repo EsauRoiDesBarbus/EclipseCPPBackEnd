@@ -245,20 +245,11 @@ void ShipBattleStates::initializeStateInfo () {
     }
 }
 
-vector<vector<int>> initializeDiceRollsHelper (StateClock& state_clock, DamageClock& damage_clock, vector<ShipWrapper>& _ships_by_shield) {
-    // helper to easily switch between attack and defense ships
-    int nb_ships_plus_1 = state_clock.size();
-    vector<vector<int>> output(nb_ships_plus_1);
-    // initialize with current clock values
-    for (int i=0; i< nb_ships_plus_1; i++) output[i]={state_clock[i]};
-
-    int nb_enemy_ships = _ships_by_shield.size ();
-    for (int ship_by_shield=0; ship_by_shield<nb_enemy_ships; ship_by_shield++) {
-        int ship_by_init = _ships_by_shield[ship_by_shield]._place_in_initiative_order;
-        // state of the ship is state_clock[ship_by_init+1], allocated damage is damage_clock[ship_by_shield]
-        output[1+ship_by_init] = _ships_by_shield[ship_by_shield]->takeHits (state_clock[ship_by_init+1], damage_clock[ship_by_shield]);
-    }
-    return output;
+int increaseRound (int current_round, int nb_ships) {
+    int next_round;
+    if (current_round<2*nb_ships-1) next_round = {current_round+1};
+    else                            next_round = {       nb_ships};
+    return next_round;
 }
 
 void ShipBattleStates::initializeDiceRolls () {
@@ -295,7 +286,7 @@ void ShipBattleStates::initializeDiceRolls () {
             if (player==ATTACKER) big_table_of_rolls[         ship][alive] = _both_ships_by_initiative[ship]->listRolls (alive, MISSILES, defender_shields);
             else                  big_table_of_rolls[         ship][alive] = _both_ships_by_initiative[ship]->listRolls (alive, MISSILES, attacker_shields);
         }
-        for (int alive=0; alive<=max_ships; alive++) {// TODO missiles
+        for (int alive=0; alive<=max_ships; alive++) {
             if (player==ATTACKER) big_table_of_rolls[nb_ships+ship][alive] = _both_ships_by_initiative[ship]->listRolls (alive,   CANONS, defender_shields);
             else                  big_table_of_rolls[nb_ships+ship][alive] = _both_ships_by_initiative[ship]->listRolls (alive,   CANONS, attacker_shields);
         }
@@ -320,7 +311,15 @@ void ShipBattleStates::initializeDiceRolls () {
             vector<RollUnallocated> rolls_unallocated = big_table_of_rolls[round][alive];
             int nb_rolls = rolls_unallocated.size ();
             _dice_rolls[state].resize(nb_rolls); //output
-            for (int roll=0; roll<nb_rolls; roll++) {
+
+            //compute the step we will reach if the ship deals no damage (as it needs to be removed when further states can be reached)
+            vector<int> no_damage_extended_state = state_clock._extended_state;
+            no_damage_extended_state[0] = increaseRound (no_damage_extended_state[0], nb_ships);
+            int no_damage_state = ExtendedStateToState (no_damage_extended_state); //state that will be reached if no damage is dealt
+
+            // range all rolls
+            int min_state=total_states; //to detect bundle
+            for (int roll=0; roll<nb_rolls; roll++) { //range all possible roll
                 // copy proba
                 _dice_rolls[state][roll]._proba = rolls_unallocated[roll]._proba;
 
@@ -328,30 +327,52 @@ void ShipBattleStates::initializeDiceRolls () {
                 DamageClock damage_clock (rolls_unallocated[roll]);
                 bool finished = false;
                 //cout << rolls_unallocated[roll].toString() <<endl;;
-                while (finished==false) {
+                while (finished==false) { //range all possible damage allocation of that roll
                     //cout << damage_clock.toString() << endl;
+                    // compute all possible extended states
+                    vector<vector<int>> all_extended_states (1+nb_ships);
+
+                    vector<ShipWrapper> ships_by_shield; //attacker or defender depending on ship side
+                    if (player==ATTACKER) ships_by_shield = _defender_ships_by_shield;
+                    else                  ships_by_shield = _attacker_ships_by_shield;
+
+                    // initialize with current clock values
+                    for (int i=0; i<1+nb_ships; i++) all_extended_states[i]={state_clock[i]};
+
+                    int nb_enemy_ships = ships_by_shield.size ();
+                    for (int ship_by_shield=0; ship_by_shield<nb_enemy_ships; ship_by_shield++) {
+                        int ship_by_init = ships_by_shield[ship_by_shield]._place_in_initiative_order;
+                        // state of the ship is state_clock[ship_by_init+1], allocated damage is damage_clock[ship_by_shield]
+                        all_extended_states[1+ship_by_init] = ships_by_shield[ship_by_shield]->takeHits (state_clock[ship_by_init+1], damage_clock[ship_by_shield]);
+                    }
+
+                    // increase round number (after a ship fires, the next ship in initiative fires)
+                    // if the last ship is firing his canon, we go back to the start of the canon round, that is 2*nb_ships-1->nb_ships
+                    all_extended_states[0] = {increaseRound(state_clock[0], nb_ships)};
+
+                    // transform into an array of states TODO range all possibilities, we only do one here
+                    vector<int> extended_state (1+nb_ships);
+                    for (int i=0; i<1+nb_ships;i++) extended_state[i] = all_extended_states[i][0];
+
+                    int next_state = ExtendedStateToState (extended_state);
+                    min_state=min(min_state, next_state);
+
+                    
+
+                    _dice_rolls[state][roll]._allocations.push_back(next_state);
                     finished = damage_clock.increment ();
                 }
-                // compute all possible extended states
-                vector<vector<int>> all_extended_states;
-                if (player==ATTACKER) all_extended_states = initializeDiceRollsHelper (state_clock, damage_clock, _defender_ships_by_shield);
-                else                  all_extended_states = initializeDiceRollsHelper (state_clock, damage_clock, _attacker_ships_by_shield);
+                // clean up allocations to remove duplicates and callback to a preceding state when it's possible to go to a further one
+                sort                                (_dice_rolls[state][roll]._allocations.begin(), _dice_rolls[state][roll]._allocations.end());
+                vector<int>::iterator last = unique (_dice_rolls[state][roll]._allocations.begin(), _dice_rolls[state][roll]._allocations.end());
+                _dice_rolls[state][roll]._allocations.erase (last                                 , _dice_rolls[state][roll]._allocations.end());
+                // if there are multiple elements, that means we can reach multiple states, hence remove the no damage state (which will be first in the list)
+                if ((_dice_rolls[state][roll]._allocations.size()>=2)and(_dice_rolls[state][roll]._allocations[0]=no_damage_state))
+                    _dice_rolls[state][roll]._allocations.erase (_dice_rolls[state][roll]._allocations.begin());
 
-                // increase round number (after a ship fires, the next ship in initiative fires)
-                // if the last ship is firing his canon, we go back to the start of the canon round, that is 2*nb_ships-1->nb_ships
-                if (state_clock[0]<2*nb_ships-1) all_extended_states[0] = {state_clock[0]+1};
-                else                             all_extended_states[0] = {        nb_ships};
-
-                // transform into an array of states TODO range all possibilities, we only do one here
-                vector<int> extended_state (1+nb_ships);
-                for (int i=0; i<1+nb_ships;i++) extended_state[i] = all_extended_states[i][0];
-
-                int next_state = ExtendedStateToState (extended_state);
-
-                if (next_state<state) _state_bundles.push_back ({next_state, state}); //TODO better bundle method for regen
-
-                _dice_rolls[state][roll]._allocations.push_back(next_state);
             }
+            // save in bundle list if needed
+            if (min_state<state) _state_bundles.push_back ({min_state, state}); //TODO better bundle method for regen
         }
         state_clock.increment ();
     }

@@ -14,7 +14,7 @@
 
 using namespace std;
 
-#define DEBUG true
+#define DEBUG false
 
 Ship::Ship (int n, int t, int i, int h, int c, int s, Weapons can, Weapons mis):
     _number(n), _type(t), _init(i),_hull(h),_computer(c),_shield(s),_canons(can),_missiles(mis) {
