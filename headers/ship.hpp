@@ -11,10 +11,10 @@
 
 // those values are used for NPC score computations
 #define INT 1
-#define CRU 10000
-#define DRE 1000000
-#define SBA 100
-#define DEAD_SHIP 100000000
+#define CRU 500
+#define DRE 10000
+#define SBA 20
+#define DEAD_SHIP 1000000
 
 #define CANONS 1
 #define MISSILES 0
@@ -29,7 +29,7 @@ struct Weapons {
 
 struct StateNPCWrapper {
     int _state;
-    int _npc_score; // npc will allocate their damage to maximize that score
+    unsigned long int _npc_score; // npc will allocate their damage to maximize that score
 };
 
 class Ship {
