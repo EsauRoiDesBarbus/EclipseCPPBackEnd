@@ -41,7 +41,16 @@ vector<int> Ship::takeHits (int state, Damage damage) {
     return {min(state +damage[0] +damage[1]*2 +damage[2]*3 +damage[3]*4, _number*(_hull+1))}; //it's a vector of 1 element
 }
 
-
+StateNPCWrapper Ship::takeNPCHits (int state, Damage damage) {
+    StateNPCWrapper output;
+    output._state = takeHits (state, damage)[0];
+    // NPC score is nb of dead ships times a big number, + damage taken, everything time a value that grows the bigger  the ship type
+    // killing big ships > killing small ships > damaging big ships > damaging small ships
+    int dead_ships = _number - countLiveShips (output._state);
+    int damage_taken = output._state - dead_ships*(_hull+1);
+    output._npc_score = (dead_ships*DEAD_SHIP+damage_taken)*_type;
+    return output;
+}
 
 vector<RollUnallocated> Ship::listRolls (int nb_ships, int which_weapon, std::vector<int> shields) {
     // range all possible results of dice using a clock like system
