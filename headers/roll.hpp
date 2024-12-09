@@ -10,6 +10,13 @@ struct Roll {
     // roll is defined as a probability, and states it can lead to
     float _proba;
     std::vector<int> _allocations;
+
+    std::string toString () {
+        std::stringstream output;
+        output<<"p= "<<_proba<<" alloc= ";
+        for (int i=0; i< int(_allocations.size());i++) {output<<_allocations[i]; if (i!=int(_allocations.size())-1) output<<","; else output<<".";}
+        return output.str();
+    }
 };
 
 struct Damage {
