@@ -41,6 +41,7 @@ struct RollUnallocated {
         std::stringstream output;
         output<<"p= "<<_proba<<" dam= ";
         for (int i=0; i< int(_damages.size());i++) output<<_damages[i].toString();
+        output << " self hits=" << _self_hits << ".";
         return output.str();
     }
 };

@@ -33,6 +33,8 @@ int main(){
     shared_ptr<Ship> no_hull_dre = make_shared<Ship> (Ship(1, DRE, 1, 0, 1, 0, {2,0,0,0,0}));
     shared_ptr<Ship> dummy___dre = make_shared<Ship> (Ship(1, DRE, 1, 8, 1, 0, {0,0,0,0,0})); //harmless ships to test damage allocation
     shared_ptr<Ship> dummy___int = make_shared<Ship> (Ship(1, INT, 1, 0, 1, 0, {0,0,0,0,0})); //harmless ships to test damage allocation
+    shared_ptr<Ship> riftcruiser = make_shared<Ship> (Ship(1, CRU, 2, 1, 1, 0, {0,0,0,0,1}));
+    
 
     BattleModifiers att({false, false}), def({false, false});
 
@@ -49,6 +51,11 @@ int main(){
     ShipBattleStates battle2 ({dummy___dre, basecruiser}, att, {interceptor}, def);
     BattleResult result2 = winChanceAndExpectancyCalculator (battle2);
     cout << "npc    rules " << result2.toString () << endl;
+
+
+    vector<RollUnallocated> rolls = riftcruiser->listRolls (1, CANONS, {2, 1, 0});
+    for (int i=0; i< int(rolls.size()); i++) cout << rolls[i].toString () << endl;
+
 
 
 
