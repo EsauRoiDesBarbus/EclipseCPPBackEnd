@@ -24,7 +24,7 @@ struct Weapons {
 
     int& operator[](int i) {return _dice[i];}
 
-    std::array <int, 5> totalDice (int nb_ships) {return {nb_ships*_dice[0], nb_ships*_dice[1], nb_ships*_dice[2], nb_ships*_dice[3], nb_ships*_dice[4]};}
+    Weapons totalDice (int nb_ships) {return {nb_ships*_dice[0], nb_ships*_dice[1], nb_ships*_dice[2], nb_ships*_dice[3], nb_ships*_dice[4]};}
 };
 
 struct StateNPCWrapper {
@@ -45,13 +45,9 @@ class Ship {
     Weapons _canons;
     Weapons _missiles;
 
-    std::vector<float> _factorial_log_table; //used to speed up probability computations
-
     //constructor
     Ship (int, int, int, int, int, int, Weapons, Weapons);
     Ship (int, int, int, int, int, int, Weapons);
-
-    void initializeFactorialLogTable ();
 
     //function
     int totalStates (); //return total number of states of that sip (depend on model)
