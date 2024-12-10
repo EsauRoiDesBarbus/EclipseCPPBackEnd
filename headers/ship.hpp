@@ -25,6 +25,8 @@ struct Weapons {
     int& operator[](int i) {return _dice[i];}
 
     Weapons totalDice (int nb_ships) {return {nb_ships*_dice[0], nb_ships*_dice[1], nb_ships*_dice[2], nb_ships*_dice[3], nb_ships*_dice[4]};}
+
+    bool hasRift () {return (_dice[4]>0);}
 };
 
 struct StateNPCWrapper {
@@ -54,6 +56,8 @@ class Ship {
     int countLiveShips (int state); //return number of ships that are alive at that state
     std::vector<int> takeHits    (int, Damage); //returns all possible states that can be reached from taking that damage
     StateNPCWrapper  takeNPCHits (int, Damage); //returns the state an NPC would reach and their NPC score (used to find NPC targets)
+
+    bool hasRift () {return (_canons.hasRift());} //return true if the ship has rift weapons
 
     std::vector<RollUnallocated> listRolls (int nb_ships, int which_weapon, std::vector<int> shields); //takes the number of ships as argument as it influences results
     // which_weapon is either CANONS or MISSILES

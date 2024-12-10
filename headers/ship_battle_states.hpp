@@ -41,6 +41,8 @@ class ShipBattleStates: public BattleStates {
     std::vector<ShipWrapper> _both_ships_by_initiative;
     std::vector<ShipWrapper> _attacker_ships_by_shield;
     std::vector<ShipWrapper> _defender_ships_by_shield;
+    std::vector<ShipWrapper> _attacker_ships_with_rift;
+    std::vector<ShipWrapper> _defender_ships_with_rift;
     void initialSort (); //sort Ships by shield and initiative
 
     // state correspondance between state (index in battle state class) and extended class (initiative + ship state array)

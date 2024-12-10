@@ -162,22 +162,19 @@ void ShipBattleStates::initialSort () {
         return a._ship_ptr->_shield > b._ship_ptr->_shield;  // Compare based on shield
     });
 
+    // save ships with rift_weapons
+    _attacker_ships_with_rift.resize(0);
+    _defender_ships_with_rift.resize(0);
+    for (int i=0; i<nb_attacker_ships; i++) if (_attacker_ships_by_shield[i]->hasRift()) _attacker_ships_with_rift.push_back(_attacker_ships_by_shield[i]);
+    for (int i=0; i<nb_defender_ships; i++) if (_defender_ships_by_shield[i]->hasRift()) _defender_ships_with_rift.push_back(_defender_ships_by_shield[i]);
+
     if (DEBUG) {
         cout << "attacker shields=";
-        for (int i=0; i<int(_attacker_ships.size()); i++) cout << _attacker_ships[i]->_shield << ",";
+        for (int i=0; i<nb_attacker_ships; i++) cout << _attacker_ships[i]->_shield << ",";
         cout << "defender shields=";
-        for (int i=0; i<int(_defender_ships.size()); i++) cout << _defender_ships[i]->_shield << ",";
+        for (int i=0; i<nb_defender_ships; i++) cout << _defender_ships[i]->_shield << ",";
         cout << endl;
-    }
-
-    // create another list of ships sorted in initiative order
-    _both_ships_by_initiative = _defender_ships_by_shield;
-    _both_ships_by_initiative.insert(_both_ships_by_initiative.end(), _attacker_ships_by_shield.begin(), _attacker_ships_by_shield.end());
-    sort(_both_ships_by_initiative.begin(), _both_ships_by_initiative.end(), [](const ShipWrapper a, const ShipWrapper b) {
-        return a._ship_ptr->_init > b._ship_ptr->_init;  // Compare based on shield
-    });
-
-    if (DEBUG) {
+    
         cout << "Ships by initiative (place init,)=";
         for (int i=0; i<int(_both_ships_by_initiative.size()); i++) cout << _both_ships_by_initiative[i]._place_in_initiative_order <<" "<< _both_ships_by_initiative[i]->_init << ",";
         cout << endl;
