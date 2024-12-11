@@ -51,10 +51,16 @@ int main(){
     ShipBattleStates battle2 ({dummy___dre, basecruiser}, att, {interceptor}, def);
     BattleResult result2 = winChanceAndExpectancyCalculator (battle2);
     cout << "npc    rules " << result2.toString () << endl;
+    def._is_npc = false;
 
 
     vector<RollUnallocated> rolls = riftcruiser->listRolls (1, CANONS, {2, 1, 0});
     for (int i=0; i< int(rolls.size()); i++) cout << rolls[i].toString () << endl;
+
+    ShipBattleStates battle3 ({riftcruiser}, att, {interceptor}, def);
+    BattleResult result3 = winChanceAndExpectancyCalculator (battle3);
+    cout << battle3.toString () << endl;
+    cout << "normal rules " << result3.toString () << endl;
 
 
 

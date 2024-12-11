@@ -308,28 +308,22 @@ Roll allocateRoll(StateClock& state_clock, RollUnallocated& roll_unallocated, ve
     return output;
 }
 
-Roll allocateNPCRoll(StateClock& state_clock, RollUnallocated& roll_unallocated, vector<ShipWrapper>& ships_by_shield) {
-    // follows NPC hit allocation rules using a score system
-    Roll output;
-    // get info
+vector<int> allocateNPCDamage (StateClock& state_clock, RollUnallocated& roll_unallocated, vector<ShipWrapper>& ships_by_shield) {
+    //allocate damage and deduce end extended state, used to compute NPC damage as will as rift self hits
     int nb_ships = state_clock.size()-1;
-    // copy proba
-    output._proba = roll_unallocated._proba;
 
-    //allocate damage and deduce end states (the hard part)
     DamageClock damage_clock (roll_unallocated);
     bool finished = false;
     unsigned long int max_score = 0;
-    int next_state = -1; 
+    vector<int> best_extended_state (1+nb_ships);
+
     while (finished==false) { //range all possible damage allocation of that roll
         // compute all possible extended states
         vector<int> extended_state (1+nb_ships);
 
         // initialize with current clock values
         for (int i=0; i<1+nb_ships; i++) extended_state[i]=state_clock[i];
-        // increase round number
-        extended_state[0] = increaseRound(state_clock[0], nb_ships);
-
+        
         unsigned long int score = 0;
 
         int nb_enemy_ships = ships_by_shield.size();
@@ -343,11 +337,32 @@ Roll allocateNPCRoll(StateClock& state_clock, RollUnallocated& roll_unallocated,
         }
         if (score >= max_score){
             // this state is a better fit for NPC
-            next_state = state_clock.extendedStateToState (extended_state);
+            best_extended_state = extended_state;
+            
             max_score = score;
         }
         finished = damage_clock.increment();
     }
+
+    return best_extended_state;
+}
+
+Roll allocateNPCRoll(StateClock& state_clock, RollUnallocated& roll_unallocated, vector<ShipWrapper>& ships_by_shield) {
+    // follows NPC hit allocation rules using a score system
+    Roll output;
+    // get info
+    int nb_ships = state_clock.size()-1;
+    // copy proba
+    output._proba = roll_unallocated._proba;
+
+    vector<int> extended_state = allocateNPCDamage (state_clock, roll_unallocated, ships_by_shield);
+
+    // increase round number
+    extended_state[0] = increaseRound(state_clock[0], nb_ships);
+
+    int next_state = state_clock.extendedStateToState (extended_state);
+
+    
     output._allocations.push_back(next_state);
 
     return output;
@@ -421,14 +436,32 @@ void ShipBattleStates::initializeDiceRolls () {
             // range all rolls
             for (int roll=0; roll<nb_rolls; roll++) { //range all possible roll
 
+                // apply rift self hits if there are any
+                // this needs to be done first as it may affect player roll allocation
+                vector<int> extended_state_after_rift;
+                if (rolls_unallocated[roll]._self_hits>0) {
+                    vector<ShipWrapper> ships_with_rift;
+                    if (player==ATTACKER) ships_with_rift = _attacker_ships_with_rift;
+                    else                  ships_with_rift = _defender_ships_with_rift;
+
+                    RollUnallocated rift_self_hits = rolls_unallocated[roll].selfHitsToRollUnallocated(ships_with_rift.size());
+                    extended_state_after_rift = allocateNPCDamage(state_clock, rift_self_hits, ships_with_rift);
+                } else {
+                    extended_state_after_rift = state_clock._extended_state;
+                }
+
+                StateClock state_clock_after_rift = state_clock; //easiest way to implement self hits, though not elegant TODO : find more elegant way
+                state_clock_after_rift._extended_state = extended_state_after_rift;
+
+                // allocate damage of roll
                 vector<ShipWrapper> ships_by_shield; //attacker or defender depending on ship side
                 BattleModifiers bonus;
                 if (player==ATTACKER) {ships_by_shield = _defender_ships_by_shield; bonus = _attacker_bonus;}
                 else                  {ships_by_shield = _attacker_ships_by_shield; bonus = _defender_bonus;}
 
                 // find all possible allocations of damage of that roll
-                if (bonus._is_npc) _dice_rolls[state][roll] = allocateNPCRoll(state_clock, rolls_unallocated[roll], ships_by_shield);
-                else               _dice_rolls[state][roll] = allocateRoll   (state_clock, rolls_unallocated[roll], ships_by_shield);
+                if (bonus._is_npc) _dice_rolls[state][roll] = allocateNPCRoll(state_clock_after_rift, rolls_unallocated[roll], ships_by_shield);
+                else               _dice_rolls[state][roll] = allocateRoll   (state_clock_after_rift, rolls_unallocated[roll], ships_by_shield);
 
                 // if there are multiple elements, that means we can reach multiple states, hence remove the no damage state (which will be first in the list)
                 if ((_dice_rolls[state][roll]._allocations.size()>=2)and(_dice_rolls[state][roll]._allocations[0]==no_damage_state))

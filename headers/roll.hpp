@@ -44,6 +44,16 @@ struct RollUnallocated {
         output << " self hits=" << _self_hits << ".";
         return output.str();
     }
+
+    RollUnallocated selfHitsToRollUnallocated (int ships_with_rift) {
+        RollUnallocated output;
+        output._proba = -1; //shouldn't be used
+        output._self_hits = 0;
+        output._damages.resize (ships_with_rift);
+        for (int i=0; i<ships_with_rift; i++) output._damages[i] = {0,0,0,0};
+        output._damages[0][0] = _self_hits;
+        return output;
+    }
 };
 
 
