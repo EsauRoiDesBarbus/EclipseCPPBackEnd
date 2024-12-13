@@ -10,9 +10,13 @@
 
 #include <vector>
 #include <memory>
+#include <string>
+#include <sstream>
 
 #define ATTACKER  1
 #define DEFENDER -1
+
+#define ROUND -1 //for extended state
 
 struct BattleModifiers {
     bool _is_npc; //to know if that side follows npc allocation rule
@@ -26,6 +30,15 @@ struct ShipWrapper { //class to add info relative to other ships
     int _place_in_initiative_order; //0 has the most initiative, 1 the second most etc
     std::shared_ptr<Ship> operator-> () {return _ship_ptr;}
     //ShipWrapper (std::shared_ptr<Ship> a, int b, int c): _ship_ptr(a), _side(b), _place_first_vector(c) {}
+};
+
+struct ExtendedState {
+    int _round;
+    std::vector<int> _ship_states;
+
+    int& operator[](int i) {if (i==ROUND) return _round; else return _ship_states[i];}
+
+    std::string toString (); 
 };
 
 class ShipBattleStates: public BattleStates, public ClockOrganizer {
@@ -44,18 +57,22 @@ class ShipBattleStates: public BattleStates, public ClockOrganizer {
     std::vector<ShipWrapper> _defender_ships_by_shield;
     std::vector<ShipWrapper> _attacker_ships_with_rift;
     std::vector<ShipWrapper> _defender_ships_with_rift;
-    void initialSort (); //sort Ships by shield and initiative
+    void initializeShipWrapperVectors (); //sort Ships by shield and initiative
 
     // state correspondance between state (index in battle state class) and extended class (initiative + ship state array)
     void initializeClockOrganizer ();
-    std::vector<int> stateToExtendedState (int);
-    int extendedStateToState (std::vector<int>);
+    ExtendedState stateToExtendedState (int );
+    int extendedStateToState (ExtendedState&);
+
+    ExtendedState readExtendedState (ClockIterator&);
 
     // all state info :_whos_is_firing, _state_bundles, _states_where_attacker_wins, _states_where_defender_wins, _live_ships
     void initializeStateInfo ();
 
     // compute graph edges 
     void initializeDiceRolls ();
+    Roll allocateRoll   (ExtendedState&, RollUnallocated&, std::vector<ShipWrapper>&);
+    Roll allocateNPCRoll(ExtendedState&, RollUnallocated&, std::vector<ShipWrapper>&);
     
 
     void initialize (); //does all previous states in order
