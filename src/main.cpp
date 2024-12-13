@@ -34,6 +34,7 @@ int main(){
     shared_ptr<Ship> dummy___dre = make_shared<Ship> (Ship(1, DRE, 1, 8, 1, 0, {0,0,0,0,0})); //harmless ships to test damage allocation
     shared_ptr<Ship> dummy___int = make_shared<Ship> (Ship(1, INT, 1, 0, 1, 0, {0,0,0,0,0})); //harmless ships to test damage allocation
     shared_ptr<Ship> riftcruiser = make_shared<Ship> (Ship(1, CRU, 2, 1, 1, 0, {0,0,0,0,1}));
+    shared_ptr<Ship> rift_stbase = make_shared<Ship> (Ship(2, SBA, 4, 0, 1, 0, {0,0,0,0,1}));
     
 
     BattleModifiers att({false, false}), def({false, false});
@@ -59,8 +60,13 @@ int main(){
 
     ShipBattleStates battle3 ({riftcruiser}, att, {interceptor}, def);
     BattleResult result3 = winChanceAndExpectancyCalculator (battle3);
-    cout << battle3.toString () << endl;
-    cout << "normal rules " << result3.toString () << endl;
+    //cout << battle3.toString () << endl;
+    cout << "1 rift ship  " << result3.toString () << endl;
+
+    ShipBattleStates battle4 ({riftcruiser, rift_stbase}, att, {interceptor}, def);
+    BattleResult result4 = winChanceAndExpectancyCalculator (battle4);
+    cout << battle4.toString () << endl;
+    cout << "3 rift ships " << result4.toString () << endl;
 
 
 
