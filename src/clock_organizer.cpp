@@ -23,11 +23,6 @@ bool ClockIterator::increment () {
     int nb_cells = _iteration.size ();
     int bound=0, counter=0;
     for (int cell=0; cell <nb_cells; cell++) {
-        if (counter>=_cells_per_bound[bound]){
-            bound++;
-            counter=0;
-        } else counter++; //note that this is not robust to when cells_per_bound has multiple 0 in a row (but it shouldn't have that)
-
         if (_remainder[bound]>=1) {
             // transfer 1 from remainder to cell and exit
             _iteration[cell]++;
@@ -37,6 +32,11 @@ bool ClockIterator::increment () {
             // transfer back all cell to remainder and go on
             _remainder[bound]=_iteration[cell];
             _iteration[cell]=0;
+            counter++;
+            if (counter>=_cells_per_bound[bound]){
+                bound++;
+                counter=0;
+            } //note that this is not robust to when cells_per_bound contains a 0 (but it shouldn't have that)
         }
     }
     return true; // went back to initial state
@@ -48,9 +48,9 @@ bool ClockIterator::increment () {
 
 int totalStatesBound (int bound, int nb_cells) {
     // returns how many combination of (a0, a1, ...) s.t. sum ai ≤ A. bound = A, nb_cells = n = number of ai
-    // the answer is newton coefficient (A+n-1 ; A), that is (n+A-1)!/( A! (n-1)!) which can be computed by the for loop below
+    // the answer is newton coefficient (A+n-1 ; A), that is (n+A)!/( A! n!) which can be computed by the for loop below
     int total_states = 1;
-    for (int cell=1; cell<=nb_cells; cell++) total_states*=(bound-1+cell)/cell;
+    for (int cell=1; cell<=nb_cells; cell++) total_states*=(bound+cell)/cell;
     return total_states;
 }
 

@@ -30,16 +30,19 @@ class ClockIterator {
     // constructor
     ClockIterator (const std::vector <int>& bounds, const std::vector <int>& cells_per_bound);
 
-    bool increment (); //go to next iteration, output is whether we went back to initial state
+    
 
     // all operations on ClockIterator are handled by ClockOrganizer
     friend class ClockOrganizer;
+
+    public:
+    bool increment (); //go to next iteration, output is whether we went back to initial state
 };
 
 class ClockOrganizer {
     private:
     std::vector <int> _bounds;
-    std::vector <int> _cells_per_bound;
+    std::vector <int> _cells_per_bound; //MUST only contain nonzero positive integers
 
     protected:
     void setBounds (std::vector <int> bounds, std::vector <int>cells_per_bound) {_bounds = bounds; _cells_per_bound=cells_per_bound;}
