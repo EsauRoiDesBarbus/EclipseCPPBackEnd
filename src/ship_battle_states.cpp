@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define DEBUG false
+#define DEBUG true
 
 
 
@@ -195,18 +195,8 @@ int ShipBattleStates::extendedStateToState (vector<int> extended_state) {
     return iterationToIndex (extended_state);
 }
 
-vector<int> ShipBattleStates::stateToExtendedState (int state) { //TODO
-    int nb_ship_types = _both_ships_by_initiative.size();
-    vector<int> extended_state (1+nb_ship_types);
-    int nb_rounds = 2*nb_ship_types;
-    extended_state[0] = state%nb_rounds;
-    state/=nb_rounds;
-    for (int ship = 0; ship<nb_ship_types; ship++) {
-        int total_states = _both_ships_by_initiative[ship]->totalStates ();
-        extended_state[1+ship] = state%total_states;
-        state/= total_states;
-    }
-    return extended_state;
+vector<int> ShipBattleStates::stateToExtendedState (int state) {
+    return indexToIteration (state);
 }
 
 void ShipBattleStates::initializeStateInfo () {

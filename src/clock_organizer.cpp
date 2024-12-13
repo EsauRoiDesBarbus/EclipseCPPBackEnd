@@ -72,7 +72,6 @@ int indexOfVector (vector <int> vector, int bound) {
 }
 
 int ClockOrganizer::iterationToIndex (vector <int> iteration) {
-    //TODO
     int index = 0;
     int nb_bounds = _bounds.size ();
     int nb_cells = iteration.size ();
@@ -87,3 +86,18 @@ int ClockOrganizer::iterationToIndex (vector <int> iteration) {
     return index;
 }
 
+vector <int> ClockOrganizer::indexToIteration (int index) {
+    // TODO make it work for any _cell_per_bound
+    int nb_bounds = _bounds.size ();
+    int nb_cells = 0;
+    for (int bound=0; bound<nb_bounds; bound++) nb_cells+=_cells_per_bound[bound];
+    vector<int> iteration (nb_cells);
+    // only work if _cell_per_bound is all 1
+    for (int cell=0; cell<nb_cells; cell++) {
+        int bound = cell; // 
+        int total_states = totalStatesBound (_bounds[bound], _cells_per_bound[bound]);
+        iteration[cell] = index%total_states;
+        index/= total_states;
+    }
+    return iteration;
+}

@@ -68,6 +68,8 @@ int main(){
     //cout << battle4.toString () << endl;
     cout << "3 rift ships " << result4.toString () << endl;
 
+    
+
 
 
 

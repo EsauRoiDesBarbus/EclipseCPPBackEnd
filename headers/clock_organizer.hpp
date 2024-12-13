@@ -50,6 +50,7 @@ class ClockOrganizer {
     ClockIterator createClockIterator ();
 
     int iterationToIndex (std::vector <int>); //returns the index number corresponding to a given iteration vector
+    std::vector <int> indexToIteration (int);
 
     std::vector <int> readData (const ClockIterator& clock_iterator, int b) const { //returns a copy of data
         if (b==ITERATION) return clock_iterator._iteration;
