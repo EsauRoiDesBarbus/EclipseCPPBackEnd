@@ -6,6 +6,7 @@
 
 #include "battle_states_mother_class.hpp"
 #include "ship.hpp"
+#include "clock_organizer.hpp"
 
 #include <vector>
 #include <memory>
@@ -27,7 +28,7 @@ struct ShipWrapper { //class to add info relative to other ships
     //ShipWrapper (std::shared_ptr<Ship> a, int b, int c): _ship_ptr(a), _side(b), _place_first_vector(c) {}
 };
 
-class ShipBattleStates: public BattleStates {
+class ShipBattleStates: public BattleStates, public ClockOrganizer {
     public:
     // battle info
     std::vector<std::shared_ptr<Ship>> _attacker_ships;
@@ -46,6 +47,7 @@ class ShipBattleStates: public BattleStates {
     void initialSort (); //sort Ships by shield and initiative
 
     // state correspondance between state (index in battle state class) and extended class (initiative + ship state array)
+    void initializeClockOrganizer ();
     std::vector<int> stateToExtendedState (int);
     int extendedStateToState (std::vector<int>);
 

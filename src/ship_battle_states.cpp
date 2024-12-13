@@ -181,19 +181,21 @@ void ShipBattleStates::initialSort () {
     }
 }
 
-int ShipBattleStates::extendedStateToState (vector<int> extended_state) {
-    int state = 0;
-    int nb_ship_types = _both_ships_by_initiative.size();
-    for (int ship = nb_ship_types-1; ship>=0; ship--) {
-        state*= _both_ships_by_initiative[ship]->totalStates ();
-        state+= extended_state[1+ship];
-    }
-    state*= 2*_both_ships_by_initiative.size();
-    state+= extended_state [0];
-    return state;
+void ShipBattleStates::initializeClockOrganizer () {
+    // the clock will be (round, state of ship1, state of ship2,...)
+    int nb_ships = _both_ships_by_initiative.size ();
+    vector <int> bounds(1+nb_ships), cells_per_bound(1+nb_ships, 1); // all bounds have 1 cell
+    bounds[0] = 2*nb_ships; //canon round + missile round
+    for (int ship=0; ship<nb_ships; ship++) bounds[1+ship]=_both_ships_by_initiative[ship]->totalStates ();
+    setBounds (bounds, cells_per_bound);
+    if (DEBUG) cout << "total states = " << totalStates () << endl;
 }
 
-vector<int> ShipBattleStates::stateToExtendedState (int state) {
+int ShipBattleStates::extendedStateToState (vector<int> extended_state) {
+    return iterationToIndex (extended_state);
+}
+
+vector<int> ShipBattleStates::stateToExtendedState (int state) { //TODO
     int nb_ship_types = _both_ships_by_initiative.size();
     vector<int> extended_state (1+nb_ship_types);
     int nb_rounds = 2*nb_ship_types;
@@ -483,6 +485,7 @@ void ShipBattleStates::initializeDiceRolls () {
 ShipBattleStates::ShipBattleStates (std::vector<shared_ptr<Ship>> att_ships, BattleModifiers att, std::vector<shared_ptr<Ship>> def_ships, BattleModifiers def): 
     _attacker_ships(att_ships), _defender_ships(def_ships), _attacker_bonus(att), _defender_bonus(def) {
     initialSort ();
+    initializeClockOrganizer ();
     initializeStateInfo ();
     initializeDiceRolls ();
 

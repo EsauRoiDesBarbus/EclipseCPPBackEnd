@@ -47,7 +47,7 @@ class ClockOrganizer {
     public:
     int totalStates ();
     
-    ClockIterator& createClockIterator ();
+    ClockIterator createClockIterator ();
 
     int iterationToIndex (std::vector <int>); //returns the index number corresponding to a given iteration vector
 

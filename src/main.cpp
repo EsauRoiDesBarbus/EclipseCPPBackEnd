@@ -65,7 +65,7 @@ int main(){
 
     ShipBattleStates battle4 ({riftcruiser, rift_stbase}, att, {interceptor}, def);
     BattleResult result4 = winChanceAndExpectancyCalculator (battle4);
-    cout << battle4.toString () << endl;
+    //cout << battle4.toString () << endl;
     cout << "3 rift ships " << result4.toString () << endl;
 
 

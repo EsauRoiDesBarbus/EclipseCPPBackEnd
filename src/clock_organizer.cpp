@@ -1,5 +1,6 @@
 #include "clock_organizer.hpp"
 
+#include <iostream>
 
 using namespace std;
 
@@ -49,7 +50,7 @@ int totalStatesBound (int bound, int nb_cells) {
     // returns how many combination of (a0, a1, ...) s.t. sum ai ≤ A. bound = A, nb_cells = n = number of ai
     // the answer is newton coefficient (A+n-1 ; A), that is (n+A-1)!/( A! (n-1)!) which can be computed by the for loop below
     int total_states = 1;
-    for (int cell=0; cell<nb_cells; cell++) total_states*=(bound+cell)/cell;
+    for (int cell=1; cell<=nb_cells; cell++) total_states*=(bound-1+cell)/cell;
     return total_states;
 }
 
@@ -60,7 +61,7 @@ int ClockOrganizer::totalStates () {
     return total_states;
 }
 
-ClockIterator& ClockOrganizer::createClockIterator () {
+ClockIterator ClockOrganizer::createClockIterator () {
     ClockIterator iterator(_bounds, _cells_per_bound);
     return iterator;
 }
@@ -73,14 +74,14 @@ int indexOfVector (vector <int> vector, int bound) {
 int ClockOrganizer::iterationToIndex (vector <int> iteration) {
     //TODO
     int index = 0;
-    int nb_cells = iteration.size ();
     int nb_bounds = _bounds.size ();
+    int nb_cells = iteration.size ();
     int end = nb_cells;
     for (int bound=nb_bounds-1; bound>=0; bound--) {
         index*=totalStatesBound (_bounds[bound], _cells_per_bound[bound]);
         int start = end-_cells_per_bound[bound];
         vector<int> values_corresponding_to_that_bound (iteration.begin()+start, iteration.begin()+end);
-        index+=indexOfVector (values_corresponding_to_that_bound ,bound);
+        index+=indexOfVector (values_corresponding_to_that_bound, bound);
         end = start;
     }
     return index;
