@@ -43,30 +43,34 @@ int main(){
     //ShipBattleStates battle ({dice_master}, att, {rho_cruiser, interceptor, interceptor}, def); //damage clock test
     //ShipBattleStates battle ({interceptor}, att, {rho_cruiser}, def);
     //ShipBattleStates battle ({dice_master, interceptor}, att, {dreadnought, interceptor, turbo_cruis}, def); //big battle test
-    ShipBattleStates battle1 ({dummy___dre, basecruiser}, att, {interceptor}, def);
-    BattleResult result1 = winChanceAndExpectancyCalculator (battle1);
-    //cout << battle1.toString () << endl;
-    cout << "normal rules " << result1.toString () << endl;
-
-    def._is_npc = true;
-    ShipBattleStates battle2 ({dummy___dre, basecruiser}, att, {interceptor}, def);
-    BattleResult result2 = winChanceAndExpectancyCalculator (battle2);
-    cout << "npc    rules " << result2.toString () << endl;
-    def._is_npc = false;
 
 
-    vector<RollUnallocated> rolls = riftcruiser->listRolls (1, CANONS, {2, 1, 0});
-    for (int i=0; i< int(rolls.size()); i++) cout << rolls[i].toString () << endl;
+    if (true) {
+        ShipBattleStates battle1 ({dummy___dre, basecruiser}, att, {interceptor}, def);
+        BattleResult result1 = winChanceAndExpectancyCalculator (battle1);
+        //cout << battle1.toString () << endl;
+        cout << "normal rules " << result1.toString () << endl;
 
-    ShipBattleStates battle3 ({riftcruiser}, att, {interceptor}, def);
-    BattleResult result3 = winChanceAndExpectancyCalculator (battle3);
-    //cout << battle3.toString () << endl;
-    cout << "1 rift ship  " << result3.toString () << endl;
+        def._is_npc = true;
+        ShipBattleStates battle2 ({dummy___dre, basecruiser}, att, {interceptor}, def);
+        BattleResult result2 = winChanceAndExpectancyCalculator (battle2);
+        cout << "npc    rules " << result2.toString () << endl;
+        def._is_npc = false;
 
-    ShipBattleStates battle4 ({riftcruiser, rift_stbase}, att, {interceptor}, def);
-    BattleResult result4 = winChanceAndExpectancyCalculator (battle4);
-    //cout << battle4.toString () << endl;
-    cout << "3 rift ships " << result4.toString () << endl;
+
+        vector<RollUnallocated> rolls = riftcruiser->listRolls (1, CANONS, {2, 1, 0});
+        for (int i=0; i< int(rolls.size()); i++) cout << rolls[i].toString () << endl;
+
+        ShipBattleStates battle3 ({riftcruiser}, att, {interceptor}, def);
+        BattleResult result3 = winChanceAndExpectancyCalculator (battle3);
+        //cout << battle3.toString () << endl;
+        cout << "1 rift ship  " << result3.toString () << endl;
+
+        ShipBattleStates battle4 ({riftcruiser, rift_stbase}, att, {interceptor}, def);
+        BattleResult result4 = winChanceAndExpectancyCalculator (battle4);
+        //cout << battle4.toString () << endl;
+        cout << "3 rift ships " << result4.toString () << endl;
+    }
 
     
 
