@@ -5,6 +5,7 @@
 #define SHIP_HPP
 
 #include "roll.hpp" // for the Roll struct
+#include "weapons.hpp"
 #include <array>
 #include <vector>
 
@@ -18,16 +19,6 @@
 
 #define CANONS 1
 #define MISSILES 0
-
-struct Weapons {
-    std::array <int, 5> _dice; // number of yellow dice, orange dice, blue dice, pink dice
-
-    int& operator[](int i) {return _dice[i];}
-
-    Weapons totalDice (int nb_ships) {return {nb_ships*_dice[0], nb_ships*_dice[1], nb_ships*_dice[2], nb_ships*_dice[3], nb_ships*_dice[4]};}
-
-    bool hasRift () {return (_dice[4]>0);}
-};
 
 struct StateNPCWrapper {
     int _state;
@@ -63,18 +54,5 @@ class Ship {
     // which_weapon is either CANONS or MISSILES
 
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif
