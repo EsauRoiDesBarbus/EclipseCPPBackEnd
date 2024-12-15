@@ -50,7 +50,10 @@ int totalStatesBound (int bound, int nb_cells) {
     // returns how many combination of (a0, a1, ...) s.t. sum ai ≤ A. bound = A, nb_cells = n = number of ai
     // the answer is newton coefficient (A+n-1 ; A), that is (n+A)!/( A! n!) which can be computed by the for loop below
     int total_states = 1;
-    for (int cell=1; cell<=nb_cells; cell++) total_states*=(bound+cell)/cell;
+    for (int cell=1; cell<=nb_cells; cell++) {
+        total_states*=bound+cell;
+        total_states/=cell; //total_states should always be a multiple of cell because of mathemagic
+    }
     return total_states;
 }
 

@@ -78,7 +78,10 @@ vector<RollUnallocated> Ship::listRolls (int nb_firing_ships, int which_weapon, 
 
     // the following algorithm will convert those misses into all possible combination of results in a clock like manner
 
+    bool finished = false;
+
     for (int _=0; _<total_states; _++) {
+    //while (finished==false) {
         // the DiceClock class does all the heavy work
         RollUnallocated roll = dice_organizer.toRollUnallocated (clock_iterator);
 
@@ -89,10 +92,9 @@ vector<RollUnallocated> Ship::listRolls (int nb_firing_ships, int which_weapon, 
         if (DEBUG) cout << roll.toString () << endl;
 
         // increment clock
-        clock_iterator.increment ();
+        finished = clock_iterator.increment ();
     }
-    if (DEBUG) cout << "Total proba= " <<total_proba <<endl;
+    if (DEBUG) cout << "finished="<<finished<< " Total proba= " <<total_proba <<endl;
     
     return rolls;
-
 }
