@@ -1,6 +1,8 @@
 #ifndef ROLL_HPP
 #define ROLL_HPP
 
+#include "damage.hpp"
+
 #include <vector>
 #include <array>
 #include <string>
@@ -15,17 +17,6 @@ struct Roll {
         std::stringstream output;
         output<<"p= "<<_proba<<" alloc= ";
         for (int i=0; i< int(_allocations.size());i++) {output<<_allocations[i]; if (i!=int(_allocations.size())-1) output<<","; else output<<".";}
-        return output.str();
-    }
-};
-
-struct Damage {
-    std::array <int, 4> _damage_faces; // number of *, number of **, number of ***, number of ****
-    
-    int& operator[](int i) {return _damage_faces[i];}
-    std::string toString () {
-        std::stringstream output;
-        output<<"("<<_damage_faces[0]<<","<<_damage_faces[1]<<","<<_damage_faces[2]<<","<<_damage_faces[3]<<")";
         return output.str();
     }
 };
