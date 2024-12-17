@@ -259,12 +259,19 @@ Roll ShipBattleStates::allocateRoll(ExtendedState& extended_state, RollUnallocat
         next_extended_state[ROUND] = increaseRound(extended_state[ROUND], nb_ships);
 
         // transform into an array of states TODO range all possibilities, we only do one here
-        for (int ship=0; ship<nb_ships;ship++) next_extended_state[ship] = all_possible_ships_states[ship][0];
+        vector<int> bounds (nb_ships);
+        for (int ship=0; ship<nb_ships;ship++) bounds[ship]=all_possible_ships_states[ship].size()-1;
+        vector<int> cells_per_bound (nb_ships, 1);
+        ClockIterator clock_iterator (bounds, cells_per_bound);
+        bool finished_2 = false;
+        while (finished_2==false) {
+            for (int ship=0; ship<nb_ships;ship++) next_extended_state[ship] = all_possible_ships_states[ship][clock_iterator[ship]];
 
-        int next_state = extendedStateToState (next_extended_state);
+            int next_state = extendedStateToState (next_extended_state);
+            output._allocations.push_back(next_state);
 
-
-        output._allocations.push_back(next_state);
+            finished_2 = clock_iterator.increment();
+        }
         finished = damage_clock.increment();
     }
     // clean up allocations to remove duplicates

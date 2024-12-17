@@ -27,16 +27,16 @@ class ClockIterator {
     std::vector <int> _remainder; // (A - sum ai, B - sum bi...)
     std::vector <int> _cells_per_bound; // first value is how many ai there, second is how many bi...
 
-    // constructor
-    ClockIterator (const std::vector <int>& bounds, const std::vector <int>& cells_per_bound);
-
-    
-
     // all operations on ClockIterator are handled by ClockOrganizer
     friend class ClockOrganizer;
 
     public:
+    // constructor
+    ClockIterator (const std::vector <int>& bounds, const std::vector <int>& cells_per_bound);
+
     bool increment (); //go to next iteration, output is whether we went back to initial state
+
+    const int& operator[](int index) {return _iteration[index];}
 };
 
 class ClockOrganizer {

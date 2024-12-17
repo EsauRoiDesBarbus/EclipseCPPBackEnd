@@ -23,9 +23,18 @@ int main(){
     //rolls = two_dreads_with_plasma_turret.listRolls (1, CANONS, {1,0});
     //rolls = two_dreads_with_plasma_turret.listRolls (2, CANONS, {2,1,0,0});
 
+    ClockOrganizerTest test;
+    test.iterationTest ({4}, {3});
+
+
+
+
+    // base ships
     shared_ptr<Ship> interceptor = make_shared<Ship> (Ship(1, INT, 3, 0, 0, 0, {1,0,0,0,0}));
     shared_ptr<Ship> basecruiser = make_shared<Ship> (Ship(1, CRU, 2, 1, 1, 0, {1,0,0,0,0}));
     shared_ptr<Ship> dreadnought = make_shared<Ship> (Ship(1, DRE, 1, 2, 1, 0, {2,0,0,0,0}));
+    shared_ptr<Ship> baseancient = make_shared<Ship> (Ship(1, DRE, 2, 1, 1, 0, {2,0,0,0,0}));
+
     shared_ptr<Ship> turbo_cruis = make_shared<Ship> (Ship(1, CRU, 3, 1, 1, 0, {1,0,0,0,0}));
     shared_ptr<Ship> rho_cruiser = make_shared<Ship> (Ship(1, CRU, 2, 1, 1, 1, {1,0,0,0,0}));
     shared_ptr<Ship> dice_master = make_shared<Ship> (Ship(1, DRE, 1, 0, 1, 0, {2,2,0,1,0}));
@@ -41,11 +50,26 @@ int main(){
 
     //ShipBattleStates battle ({turbo_cruis}, att, {dreadnought, rho_cruiser, interceptor}, def);
     //ShipBattleStates battle ({dice_master}, att, {rho_cruiser, interceptor, interceptor}, def); //damage clock test
-    //ShipBattleStates battle ({interceptor}, att, {rho_cruiser}, def);
+    ShipBattleStates battle ({basecruiser, interceptor}, att, {baseancient}, def);
+    BattleResult result = winChanceAndExpectancyCalculator (battle);
+    cout << battle.toString () << endl;
+    cout << "first test " << result.toString () << endl;
     //ShipBattleStates battle ({dice_master, interceptor}, att, {dreadnought, interceptor, turbo_cruis}, def); //big battle test
 
+    // optimal targeting test
+    shared_ptr<Ship> missile_int = make_shared<Ship> (Ship(1, INT, 3, 0, 2, 0, {0,0,0,0,0}, {2,0,0,0,0}));
+    shared_ptr<Ship> missile_cru = make_shared<Ship> (Ship(1, CRU, 2, 1, 2, 0, {0,0,0,0,0}, {0,0,0,2,0}));
+    shared_ptr<Ship> space_brick = make_shared<Ship> (Ship(2, DRE, 1, 4, 1, 0, {2,0,0,0,0}));
 
-    if (true) {
+    battle = ShipBattleStates ({missile_int, missile_cru}, att, {space_brick}, def);
+    result = winChanceAndExpectancyCalculator (battle);
+    cout << battle.toString () << endl;
+    cout << "optimal targeting test (should be 6.25%)" << result.toString () << endl;
+
+
+
+
+    if (false) {
         ShipBattleStates battle1 ({dummy___dre, basecruiser}, att, {interceptor}, def);
         BattleResult result1 = winChanceAndExpectancyCalculator (battle1);
         //cout << battle1.toString () << endl;
@@ -71,11 +95,33 @@ int main(){
         //cout << battle4.toString () << endl;
         cout << "3 rift ships " << result4.toString () << endl;
     }
+    if (false) {
 
-    
+        shared_ptr<Ship> rift_cru_x2 = make_shared<Ship> (Ship(2, CRU, 0, 8, 0, 0, {0,0,0,0,1}));
+        shared_ptr<Ship> rift_int_x2 = make_shared<Ship> (Ship(2, CRU, 0, 2, 0, 0, {0,0,0,0,1}));
+        shared_ptr<Ship> gretech_dre = make_shared<Ship> (Ship(1, DRE, 3, 4, 4, 0, {0,0,0,2,0}));
+        ShipBattleStates battle1 ({gretech_dre}, att, {rift_cru_x2}, def);
+        BattleResult result1 = winChanceAndExpectancyCalculator (battle1);
+        //cout << battle1.toString () << endl;
+        cout << "rift cruiser test " << result1.toString () << endl;
+
+        //ShipBattleStates battle2 ({gretech_dre}, att, {rift_cru_x2, rift_int_x2}, def);
+        //BattleResult result2 = winChanceAndExpectancyCalculator (battle2);
+        //cout << battle2.toString () << endl;
+        //cout << "rift cruiser test " << result2.toString () << endl;
 
 
+        shared_ptr<Ship> elliot_ints = make_shared<Ship> (Ship(4, INT, 4, 0, 2, 0, {0,1,0,0,0}));
+        shared_ptr<Ship> elliot_crus = make_shared<Ship> (Ship(3, CRU, 4, 2, 4, 0, {0,1,0,0,0}));
+        shared_ptr<Ship> etienn_dres = make_shared<Ship> (Ship(2, DRE, 2, 8, 0, 2, {0,0,0,0,1}));
+        shared_ptr<Ship> etienn_ints = make_shared<Ship> (Ship(3, INT, 3, 1, 0, 0, {2,0,0,0,0}));
 
+        //ShipBattleStates battle3 ({elliot_ints, elliot_crus}, att, {etienn_dres, etienn_ints}, def);
+        //BattleResult result3 = winChanceAndExpectancyCalculator (battle3);
+        //cout << battle2.toString () << endl;
+        //cout << "fatefull battle Etienne Elliot " << result3.toString () << endl;
+
+    }
 
 
 
