@@ -65,4 +65,10 @@ class ClockOrganizer {
     }
 };
 
+class ClockOrganizerTest: public ClockOrganizer {
+    public:
+    // print iterations, in order, as well as the result of indexToIteration and iterationToIndex
+    void iterationTest (std::vector <int> bounds, std::vector <int>cells_per_bound);
+};
+
 #endif

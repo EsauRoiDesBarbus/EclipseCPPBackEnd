@@ -25,6 +25,11 @@ bool ClockIterator::increment () {
     int nb_cells = _iteration.size ();
     int bound=0, counter=0;
     for (int cell=0; cell <nb_cells; cell++) {
+        while (counter>=_cells_per_bound[bound]){
+            bound++;
+            counter=0;
+        } // this should robust to when cells_per_bound contains multiple 0 (but it shouldn't have that)
+        counter++;
         if (_remainder[bound]>=1) {
             // transfer 1 from remainder to cell and exit
             _iteration[cell]++;
@@ -34,11 +39,6 @@ bool ClockIterator::increment () {
             // transfer back all cell to remainder and go on
             _remainder[bound]=_iteration[cell];
             _iteration[cell]=0;
-            counter++;
-            if (counter>=_cells_per_bound[bound]){
-                bound++;
-                counter=0;
-            } //note that this is not robust to when cells_per_bound contains a 0 (but it shouldn't have that)
         }
     }
     return true; // went back to initial state
@@ -170,4 +170,36 @@ vector <int> ClockOrganizer::indexToIteration (int index) {
         index/= total_states;
     }
     return iteration;
+}
+
+
+
+
+////////////////////////
+// ClockOrganizerTest //
+////////////////////////
+// print iterations, in order, as well as the result of indexToIteration and iterationToIndex
+void ClockOrganizerTest::iterationTest (std::vector <int> bounds, std::vector <int> cells_per_bound) {
+    //initialize ClockOrganizer
+    setBounds (bounds, cells_per_bound);
+
+    ClockIterator clock_iterator = createClockIterator();
+    int total_states = totalStates ();
+    cout << "ClockOrganizer test\n";
+    for (int state=0; state<total_states; state++) {
+        vector <int> iteration = readData (clock_iterator, ITERATION);
+        // check two ways conversion of index
+        cout << "state=" << state << "<->" <<  iterationToIndex (iteration);
+        // check if iteration match
+        cout << " iteration =";
+        for (int i=0; i <int(iteration.size()); i++) cout << iteration[i] << ",";
+        cout << "<->";
+        iteration = indexToIteration (state);
+        for (int i=0; i <int(iteration.size()); i++) cout << iteration[i] << ",";
+        cout <<endl;
+
+        clock_iterator.increment ();
+    
+    }
+
 }
