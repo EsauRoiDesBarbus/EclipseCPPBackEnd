@@ -26,7 +26,7 @@ struct RollUnallocated {
     float _proba;
     std::vector<Damage> _damages; //first vector is total hits, (second is partial hits (third is partial partial hits)...))
     // full hits are hits that can be applied to all enemy ships, first partial hits are hits that can be applied to all ships except the one with the most shield
-    int _self_hits; //for rift canon TODO
+    int _self_hits;
 
     std::string toString () {
         std::stringstream output;

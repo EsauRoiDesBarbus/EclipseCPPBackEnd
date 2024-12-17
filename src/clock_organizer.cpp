@@ -159,10 +159,8 @@ vector<int> indexToVector (int index, int bound_minus_sum_coord, int nb_cells, c
 
 vector <int> ClockOrganizer::indexToIteration (int index) {
     if (DEBUG) cout << "indexToIteration\n";
-    // TODO make it work for any _cell_per_bound
     int nb_bounds = _bounds.size ();
     vector<int> iteration (0);
-    // only work if _cell_per_bound is all 1
     for (int bound=0; bound<nb_bounds; bound++) {
         int total_states = totalStatesBound (                _bounds[bound], _cells_per_bound[bound]);
         vector<int> vec = indexToVector (index%total_states, _bounds[bound], _cells_per_bound[bound], _pascal_triangle);

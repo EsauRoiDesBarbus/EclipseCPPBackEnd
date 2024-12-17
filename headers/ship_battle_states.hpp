@@ -20,7 +20,7 @@
 
 struct BattleModifiers {
     bool _is_npc; //to know if that side follows npc allocation rule
-    bool _antimatter_splitter; //true if that side has this tech
+    bool _antimatter_splitter; //true if that side has this tech //TODO
 };
 
 struct ShipWrapper { //class to add info relative to other ships
@@ -47,8 +47,8 @@ class ShipBattleStates: public BattleStates, public ClockOrganizer {
     std::vector<std::shared_ptr<Ship>> _attacker_ships;
     std::vector<std::shared_ptr<Ship>> _defender_ships;
 
-    BattleModifiers _attacker_bonus; //TODO
-    BattleModifiers _defender_bonus; //TODO
+    BattleModifiers _attacker_bonus;
+    BattleModifiers _defender_bonus;
 
 
     // pre-treatment
