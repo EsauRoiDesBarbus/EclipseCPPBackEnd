@@ -258,7 +258,7 @@ Roll ShipBattleStates::allocateRoll(ExtendedState& extended_state, RollUnallocat
         // increase round number
         next_extended_state[ROUND] = increaseRound(extended_state[ROUND], nb_ships);
 
-        // transform into an array of states TODO range all possibilities, we only do one here
+        // transform into an array of ll possible states
         vector<int> bounds (nb_ships);
         for (int ship=0; ship<nb_ships;ship++) bounds[ship]=all_possible_ships_states[ship].size()-1;
         vector<int> cells_per_bound (nb_ships, 1);

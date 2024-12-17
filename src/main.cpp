@@ -24,7 +24,7 @@ int main(){
     //rolls = two_dreads_with_plasma_turret.listRolls (2, CANONS, {2,1,0,0});
 
     ClockOrganizerTest test;
-    test.iterationTest ({4}, {3});
+    //test.iterationTest ({4}, {3});
 
 
 
@@ -40,8 +40,7 @@ int main(){
     shared_ptr<Ship> dice_master = make_shared<Ship> (Ship(1, DRE, 1, 0, 1, 0, {2,2,0,1,0}));
     shared_ptr<Ship> no_hull_cru = make_shared<Ship> (Ship(1, CRU, 2, 0, 1, 0, {1,0,0,0,0}));
     shared_ptr<Ship> no_hull_dre = make_shared<Ship> (Ship(1, DRE, 1, 0, 1, 0, {2,0,0,0,0}));
-    shared_ptr<Ship> dummy___dre = make_shared<Ship> (Ship(1, DRE, 1, 8, 1, 0, {0,0,0,0,0})); //harmless ships to test damage allocation
-    shared_ptr<Ship> dummy___int = make_shared<Ship> (Ship(1, INT, 1, 0, 1, 0, {0,0,0,0,0})); //harmless ships to test damage allocation
+    
     shared_ptr<Ship> riftcruiser = make_shared<Ship> (Ship(1, CRU, 2, 1, 1, 0, {0,0,0,0,1}));
     shared_ptr<Ship> rift_stbase = make_shared<Ship> (Ship(2, SBA, 4, 0, 1, 0, {0,0,0,0,1}));
     
@@ -52,7 +51,7 @@ int main(){
     //ShipBattleStates battle ({dice_master}, att, {rho_cruiser, interceptor, interceptor}, def); //damage clock test
     ShipBattleStates battle ({basecruiser, interceptor}, att, {baseancient}, def);
     BattleResult result = winChanceAndExpectancyCalculator (battle);
-    cout << battle.toString () << endl;
+    //cout << battle.toString () << endl;
     cout << "first test " << result.toString () << endl;
     //ShipBattleStates battle ({dice_master, interceptor}, att, {dreadnought, interceptor, turbo_cruis}, def); //big battle test
 
@@ -63,23 +62,30 @@ int main(){
 
     battle = ShipBattleStates ({missile_int, missile_cru}, att, {space_brick}, def);
     result = winChanceAndExpectancyCalculator (battle);
-    cout << battle.toString () << endl;
-    cout << "optimal targeting test (should be 6.25%)" << result.toString () << endl;
+    //cout << battle.toString () << endl;
+    cout << "optimal targeting test (should be 6.25%) " << result.toString () << endl;
+
+    // NPC rule test
+    shared_ptr<Ship> dummy___dre = make_shared<Ship> (Ship(1, DRE, 1, 4, 1, 0, {0,0,0,0,0})); //harmless ships to test damage allocation
+    shared_ptr<Ship> dummy___int = make_shared<Ship> (Ship(1, INT, 1, 0, 1, 0, {0,0,0,0,0})); //harmless ships to test damage allocation
+
+    battle = ShipBattleStates ({dummy___dre, basecruiser}, att, {basecruiser}, def);
+    result = winChanceAndExpectancyCalculator (battle);
+    //cout << battle.toString () << endl;
+    cout << "normal targeting test (should be 44.8%) " << result.toString () << endl;
+
+    def._is_npc = true;
+    battle = ShipBattleStates({dummy___dre, basecruiser}, att, {basecruiser}, def);
+    result = winChanceAndExpectancyCalculator (battle);
+    //cout << battle.toString () << endl;
+    cout << "npc targeting test (should be 98.33%) " << result.toString () << endl;
+    def._is_npc = false;
 
 
 
 
     if (false) {
-        ShipBattleStates battle1 ({dummy___dre, basecruiser}, att, {interceptor}, def);
-        BattleResult result1 = winChanceAndExpectancyCalculator (battle1);
-        //cout << battle1.toString () << endl;
-        cout << "normal rules " << result1.toString () << endl;
-
-        def._is_npc = true;
-        ShipBattleStates battle2 ({dummy___dre, basecruiser}, att, {interceptor}, def);
-        BattleResult result2 = winChanceAndExpectancyCalculator (battle2);
-        cout << "npc    rules " << result2.toString () << endl;
-        def._is_npc = false;
+        
 
 
         vector<RollUnallocated> rolls = riftcruiser->listRolls (1, CANONS, {2, 1, 0});

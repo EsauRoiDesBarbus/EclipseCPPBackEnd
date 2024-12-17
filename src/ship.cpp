@@ -106,12 +106,30 @@ vector<int> Ship::takeHits (int state, Damage damage) {
 
 StateNPCWrapper Ship::takeNPCHits (int state, Damage damage) {
     StateNPCWrapper output;
-    output._state = takeHits (state, damage)[0];
-    // NPC score is nb of dead ships times a big number, + damage taken, everything time a value that grows the bigger  the ship type
-    // killing big ships > killing small ships > damaging big ships > damaging small ships
-    int dead_ships = _number - countLiveShips (output._state);
-    int damage_taken = output._state - dead_ships*(_hull+1);
-    output._npc_score = (dead_ships*DEAD_SHIP+damage_taken)*_type;
+    // find all possible states
+    vector<int> possible_states = takeHits (state, damage);
+    unsigned long int max_score=0;
+    int best_state=-1;
+    for (int i=0; i<int(possible_states.size()); i++) {
+        int state = possible_states[i];
+        vector<int> ship_state = stateToShipState (state);
+        // NPC score is nb of dead ships times a big number, + damage taken, everything time a value that grows the bigger  the ship type
+        // killing big ships > killing small ships > damaging big ships > damaging small ships
+        int dead_ships = 0;
+        int damage_taken = 0;
+        for (int ship=0; ship<_number; ship++) {
+            if (ship_state[ship]<_hull+1) damage_taken+=ship_state[ship];
+            else dead_ships++;
+        }
+        unsigned long int score = (dead_ships*DEAD_SHIP+damage_taken)*_type;
+
+        if (score>=max_score) {
+            max_score=score;
+            best_state=state; 
+        }
+    }
+    output._npc_score = max_score;
+    output._state = best_state;
     return output;
 }
 
