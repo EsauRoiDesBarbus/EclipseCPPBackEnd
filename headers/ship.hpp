@@ -4,8 +4,10 @@
 #ifndef SHIP_HPP
 #define SHIP_HPP
 
-#include "roll.hpp" // for the Roll struct
+#include "clock_organizer.hpp"
+#include "roll.hpp"
 #include "weapons.hpp"
+
 #include <array>
 #include <vector>
 
@@ -25,7 +27,7 @@ struct StateNPCWrapper {
     unsigned long int _npc_score; // npc will allocate their damage to maximize that score
 };
 
-class Ship {
+class Ship: public ClockOrganizer {
     public:
     // stats
     int _number;
@@ -42,8 +44,16 @@ class Ship {
     Ship (int, int, int, int, int, int, Weapons, Weapons);
     Ship (int, int, int, int, int, int, Weapons);
 
+    void initializeClockOrganizer ();
+
+    std::vector<int> iterationToShipState (std::vector<int>);
+    std::vector<int> shipStateToIteration (std::vector<int>);
+
+    std::vector<int> stateToShipState (int);
+    int shipStateToState (std::vector<int>);
+
     //function
-    int totalStates (); //return total number of states of that sip (depend on model)
+    // int totalStates (); //return total number of states of that sip, REDUNDANT with ClockOrganizer
     int countLiveShips (int state); //return number of ships that are alive at that state
     std::vector<int> takeHits    (int, Damage); //returns all possible states that can be reached from taking that damage
     StateNPCWrapper  takeNPCHits (int, Damage); //returns the state an NPC would reach and their NPC score (used to find NPC targets)

@@ -2,12 +2,14 @@
 // Default implementation of the ship class //
 //////////////////////////////////////////////
 
-// in this implementation, the index is equal to the total number of damage taken by that ship type
-// we assume that the opponents will finish a ship before firing on another one of the same type
-// this means that damage can't be split between ships of the same type TODO : make a class that can model that
+// in this implementation, the range all possible damage allocations between ships of the same type
+// it is represented as (a0, a1..., an-1) where n is the number of ships of that type
+// a0 is the damage taken by the 1st ship, a1 is how much MORE damage the second ship as taken compared to the 1st ship, and so on
+// sum ai is equal to the damage taken by the last ship, hence it is inferior or equal to hull+1
 
 #include "ship.hpp"
 #include "dice_organizer.hpp"
+#include "single_damage_organizer.hpp"
 
 #include <iostream>
 #include <cmath>
@@ -19,24 +21,87 @@ using namespace std;
 
 
 Ship::Ship (int n, int t, int i, int h, int c, int s, Weapons can, Weapons mis):
-    _number(n), _type(t), _init(i),_hull(h),_computer(c),_shield(s),_canons(can),_missiles(mis) {}
+    _number(n), _type(t), _init(i),_hull(h),_computer(c),_shield(s),_canons(can),_missiles(mis)         {initializeClockOrganizer();}
 
 Ship::Ship (int n, int t, int i, int h, int c, int s, Weapons can):
-    _number(n), _type(t), _init(i),_hull(h),_computer(c),_shield(s),_canons(can),_missiles({0,0,0,0,0}) {}
+    _number(n), _type(t), _init(i),_hull(h),_computer(c),_shield(s),_canons(can),_missiles({0,0,0,0,0}) {initializeClockOrganizer();}
 
-int Ship::totalStates () {
-    return (_number*(_hull+1)+1);
+void Ship::initializeClockOrganizer () {
+    setBounds ({_hull+1}, {_number});
 }
 
+////////////////////////////////////////////////////////
+// conversion between iteration, ship state and index //
+////////////////////////////////////////////////////////
+
+vector<int> Ship::iterationToShipState (vector<int> iteration) {
+    vector<int> ship_state(_number, 0);
+    ship_state[0] = iteration[0];
+    for (int ship=1; ship<_number; ship++) ship_state[ship]=ship_state[ship-1]+iteration[ship];
+    return ship_state;
+}
+
+vector<int> Ship::shipStateToIteration (vector<int> ship_state) {
+    sort (ship_state.begin(), ship_state.end()); //sort in increasing order
+    vector<int> iteration(_number, 0);
+    iteration[0] = ship_state[0];
+    for (int ship=1; ship<_number; ship++) iteration[ship]=ship_state[ship]-ship_state[ship-1];
+    return iteration;
+}
+
+vector<int> Ship::stateToShipState (int state) {
+    vector<int> iteration = indexToIteration (state);
+    return iterationToShipState (iteration);
+}
+
+int Ship::shipStateToState (vector<int> ship_state) {
+    vector<int> iteration = shipStateToIteration (ship_state);
+    return iterationToIndex (iteration);
+}
+
+////////////////////////////////////
+// functions for ShipBattleStates //
+////////////////////////////////////
+
 int Ship::countLiveShips (int state) {
-    return (_number - state/(_hull+1));
+    vector <int> ship_state = stateToShipState (state);
+    int alive = 0;
+    for (int ship=0; ship<_number; ship++) if (ship_state[ship]<_hull+1) alive++;
+    return (alive);
 }
 
 vector<int> Ship::takeHits (int state, Damage damage) {
-    // in this implementation, we retrun only one state
-    // TODO: take overkill into account
-    // idea : check if overkill, then check for attribution with 0 overflow, then allocation with 1 overflow etc...
-    return {min(state +damage[0] +damage[1]*2 +damage[2]*3 +damage[3]*4, _number*(_hull+1))}; //it's a vector of 1 element
+    vector<int> output (0);
+
+    vector<int> initial_ship_state = stateToShipState (state);
+
+    // create organizer that will range all damage allocation among ship of our type
+    SingleDamageOrganizer damage_organizer (damage, _number);
+    ClockIterator clock_iterator = damage_organizer.createClockIterator ();
+    int total_states = damage_organizer.totalStates ();
+
+    for (int _=0; _<total_states; _++) {
+        vector<int> damage_taken = damage_organizer.readDamage (clock_iterator);
+
+        vector<int> new_ship_state (_number);
+        for (int ship=0; ship<_number; ship++) new_ship_state[ship] = min(initial_ship_state[ship]+damage_taken[ship],_hull+1);
+
+        if (DEBUG) {
+            cout << "takeHits: initial state + damage = new state. hull=" <<_hull << endl;
+            for (int ship=0; ship<_number; ship++) cout << initial_ship_state [ship] << " + " << damage_taken[ship] << " = " << new_ship_state[ship] <<endl;
+        }
+
+        int new_state = shipStateToState (new_ship_state);
+        
+        output.push_back (new_state);
+
+        clock_iterator.increment ();
+    }
+    // clean up and remove duplicates
+    sort                              (output.begin(), output.end());
+    vector<int>::iterator last= unique(output.begin(), output.end());
+    output.erase                      (last          , output.end());
+    return output;
 }
 
 StateNPCWrapper Ship::takeNPCHits (int state, Damage damage) {
