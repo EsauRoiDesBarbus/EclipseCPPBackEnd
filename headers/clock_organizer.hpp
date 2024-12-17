@@ -44,8 +44,12 @@ class ClockOrganizer {
     std::vector <int> _bounds;
     std::vector <int> _cells_per_bound; //MUST only contain nonzero positive integers
 
+    std::vector<std::vector<int>> _pascal_triangle; //table used to convert into iteration
+    void initializePascalTriangle ();
+
     protected:
-    void setBounds (std::vector <int> bounds, std::vector <int>cells_per_bound) {_bounds = bounds; _cells_per_bound=cells_per_bound;}
+    void setBounds (std::vector <int> bounds, std::vector <int>cells_per_bound);
+     
 
     public:
     int totalStates ();

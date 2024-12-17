@@ -4,6 +4,8 @@
 
 using namespace std;
 
+#define DEBUG false
+
 ///////////////////
 // ClockIterator //
 ///////////////////
@@ -46,9 +48,40 @@ bool ClockIterator::increment () {
 // ClockOrganizer //
 ////////////////////
 
+void ClockOrganizer::setBounds (vector <int> bounds, vector <int>cells_per_bound) {
+    // basically the initialization of the ClockOrganizer class
+    _bounds = bounds;
+    _cells_per_bound=cells_per_bound;
+
+    initializePascalTriangle ();
+}
+
+void ClockOrganizer::initializePascalTriangle () {
+    if (DEBUG) cout << "initializePascalTriangle\n";
+    // find bounds on triangle
+    int nb_bounds = _bounds.size ();
+    int max_bound=0;
+    int max_cells_per_bound=0;
+    for (int bound=0; bound<nb_bounds; bound++){
+        max_bound = max (max_bound, _bounds[bound]);
+        max_cells_per_bound = max (max_cells_per_bound, _cells_per_bound[bound]);
+    }
+    //build triangle
+    _pascal_triangle.resize (1+max_cells_per_bound); //first index is i, second is value of ai
+    _pascal_triangle[0] = vector <int> (1+max_cells_per_bound+max_bound, 1);
+    for (int cell=1; cell<1+max_cells_per_bound; cell++) {
+        int bounds_to_range = 1+max_cells_per_bound+max_bound-cell;
+        _pascal_triangle[cell].resize (bounds_to_range);
+        _pascal_triangle[cell][0]=1;
+        for (int bound=1; bound<bounds_to_range; bound++){
+            _pascal_triangle[cell][bound] = _pascal_triangle[cell-1][bound]+_pascal_triangle[cell][bound-1];
+        }
+    }
+}
+
 int totalStatesBound (int bound, int nb_cells) {
     // returns how many combination of (a0, a1, ...) s.t. sum ai ≤ A. bound = A, nb_cells = n = number of ai
-    // the answer is newton coefficient (A+n-1 ; A), that is (n+A)!/( A! n!) which can be computed by the for loop below
+    // the answer is newton coefficient (A+n ; A), that is (A+n)!/( A! n!) which can be computed by the for loop below
     int total_states = 1;
     for (int cell=1; cell<=nb_cells; cell++) {
         total_states*=bound+cell;
@@ -69,12 +102,31 @@ ClockIterator ClockOrganizer::createClockIterator () {
     return iterator;
 }
 
-int indexOfVector (vector <int> vector, int bound) {
-    // compute the index of (a0, a1, ...) with given ai and A
-    return vector[0]; //works for vector of size 1 TODO : vector of higher size
+int vectorToIndex (vector<int> vec, int bound, const vector<vector<int>>& pascal_triangle) {
+    if (DEBUG) cout << "vectorToIndex\n"; 
+    // compute the index of (a0, a1, ...) with given ai and A by riding pascal's triangle
+    // if an =1, then the other indexes went over (A+n-1 ; A) combination, if an=2, they went over (A+n-1 ; A) + (A+n-2 ; A-1) and so on
+    // this simplifies as index = (A+n ; A) - sum (A+i-sum ai; A-1-sum ai) - (A+1 -sum ai ; A-sum ai), the last term is equal to -(A1-sum ai +1)
+    int nb_cells = vec.size(); //start at last index
+    int index = pascal_triangle [nb_cells][bound]; //(A+n ; A)
+    int sum_coord = 0;
+    for (int cell=nb_cells-1; cell>0; cell--) {
+        sum_coord += vec[cell];
+        index-= pascal_triangle [cell+1][bound-1-sum_coord]; //(A+i-sum ai; A-1-sum ai)
+    }
+    sum_coord += vec[0];
+    //index -= pascal_triangle [1][bound-sum_coord];
+    index -= bound -sum_coord+1;
+    if (DEBUG) {
+        cout << "bound=" << bound << " vec=";
+        for (int i=0; i<nb_cells; i++) cout << vec[i] <<",";
+        cout << " index="<<index<<endl;
+    }
+    return index;
 }
 
 int ClockOrganizer::iterationToIndex (vector <int> iteration) {
+    if (DEBUG) cout << "iterationToIndex\n";
     int index = 0;
     int nb_bounds = _bounds.size ();
     int nb_cells = iteration.size ();
@@ -83,23 +135,38 @@ int ClockOrganizer::iterationToIndex (vector <int> iteration) {
         index*=totalStatesBound (_bounds[bound], _cells_per_bound[bound]);
         int start = end-_cells_per_bound[bound];
         vector<int> values_corresponding_to_that_bound (iteration.begin()+start, iteration.begin()+end);
-        index+=indexOfVector (values_corresponding_to_that_bound, bound);
+        index+=vectorToIndex (values_corresponding_to_that_bound, _bounds[bound], _pascal_triangle);
         end = start;
     }
     return index;
 }
 
+vector<int> indexToVector (int index, int bound_minus_sum_coord, int nb_cells, const vector<vector<int>>& pascal_triangle) {
+    if (DEBUG) cout << "indexToVector\n";
+    vector<int> output(nb_cells, 0); 
+    // compute the index of (a0, a1, ...) with given ai and A by riding pascal's triangle
+    // if an =1, then the other indexes went over (A+n-1 ; A) combination, if an=2, they went over (A+n-1 ; A) + (A+n-2 ; A-1) and so on
+    int cell = nb_cells-1;
+    while (index > 0) {
+        if (index>=pascal_triangle[cell][bound_minus_sum_coord]) {
+            index-=pascal_triangle[cell][bound_minus_sum_coord];
+            output[cell]++;
+            bound_minus_sum_coord--; // increased the sum of coordinates by 1
+        } else cell--; //go to lower part of vector
+    }
+    return output;
+}
+
 vector <int> ClockOrganizer::indexToIteration (int index) {
+    if (DEBUG) cout << "indexToIteration\n";
     // TODO make it work for any _cell_per_bound
     int nb_bounds = _bounds.size ();
-    int nb_cells = 0;
-    for (int bound=0; bound<nb_bounds; bound++) nb_cells+=_cells_per_bound[bound];
-    vector<int> iteration (nb_cells);
+    vector<int> iteration (0);
     // only work if _cell_per_bound is all 1
-    for (int cell=0; cell<nb_cells; cell++) {
-        int bound = cell; // 
-        int total_states = totalStatesBound (_bounds[bound], _cells_per_bound[bound]);
-        iteration[cell] = index%total_states;
+    for (int bound=0; bound<nb_bounds; bound++) {
+        int total_states = totalStatesBound (                _bounds[bound], _cells_per_bound[bound]);
+        vector<int> vec = indexToVector (index%total_states, _bounds[bound], _cells_per_bound[bound], _pascal_triangle);
+        iteration.insert (iteration.end(), vec.begin(), vec.end ());
         index/= total_states;
     }
     return iteration;
