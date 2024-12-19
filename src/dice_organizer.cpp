@@ -152,7 +152,7 @@ RollUnallocated DiceOrganizer::toRollUnallocated (ClockIterator& clock_iterator)
 
     int before_rift = 4*_nb_result_per_die;
     for (int hit=0; hit<NB_RIFT_RESULTS; hit++) {
-        dam[rift_hits[hit][0]]+= all_hits[before_rift+hit];
+        if (rift_hits[hit][0]>=1) dam[rift_hits[hit][0]-1]+= all_hits[before_rift+hit];
         output._self_hits += rift_hits[hit][1]*all_hits[before_rift+hit];
     }
     output._damages.push_back(dam);
