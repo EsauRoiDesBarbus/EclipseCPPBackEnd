@@ -207,11 +207,6 @@ void ShipBattleStates::initializeStateInfo () {
         //_who_is_firing
         int round = extended_state[ROUND];
         _who_is_firing[state]=_both_ships_by_initiative[round%nb_ships]._side;
-
-        if (DEBUG) { //check if state clock and state conversion function work
-            cout << "state=" <<state << "<->" <<extendedStateToState (extended_state)<< " ";
-            cout << extended_state.toString () << "<->" << stateToExtendedState (state).toString() <<endl;
-        }
         state_clock.increment ();
     }
 }
