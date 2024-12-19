@@ -177,27 +177,37 @@ vector <int> ClockOrganizer::indexToIteration (int index) {
 // ClockOrganizerTest //
 ////////////////////////
 // print iterations, in order, as well as the result of indexToIteration and iterationToIndex
-void ClockOrganizerTest::iterationTest (std::vector <int> bounds, std::vector <int> cells_per_bound) {
+void ClockOrganizerTest::iterationTest (std::vector <int> bounds, std::vector <int> cells_per_bound, bool spam_cout) {
     //initialize ClockOrganizer
     setBounds (bounds, cells_per_bound);
 
     ClockIterator clock_iterator = createClockIterator();
     int total_states = totalStates ();
     cout << "ClockOrganizer test\n";
+    bool all_match = true;
     for (int state=0; state<total_states; state++) {
-        vector <int> iteration = readData (clock_iterator, ITERATION);
+        bool match = true;
+        vector <int> iteration_1 = readData (clock_iterator, ITERATION);
+        vector <int> iteration_2 = indexToIteration (state);
+
+        // test that everything matches
+        if (state!=iterationToIndex (iteration_1)) match = false;
+        for (int i=0; i <int(iteration_1.size()); i++) if (iteration_1[i]!=iteration_2[i]) match = false;
         // check two ways conversion of index
-        cout << "state=" << state << "<->" <<  iterationToIndex (iteration);
-        // check if iteration match
-        cout << " iteration =";
-        for (int i=0; i <int(iteration.size()); i++) cout << iteration[i] << ",";
-        cout << "<->";
-        iteration = indexToIteration (state);
-        for (int i=0; i <int(iteration.size()); i++) cout << iteration[i] << ",";
-        cout <<endl;
+        if ((match==false)or(spam_cout)) {
+            cout << "state=" << state << "<->" <<  iterationToIndex (iteration_1);
+            // check if iteration match
+            cout << " iteration =";
+            for (int i=0; i <int(iteration_1.size()); i++) cout << iteration_1[i] << ",";
+            cout << "<->";
+            for (int i=0; i <int(iteration_2.size()); i++) cout << iteration_2[i] << ",";
+            cout <<endl;
+        }
+
+        if (match==false) all_match = false;
 
         clock_iterator.increment ();
-    
     }
+    if (all_match) cout << "no problem in ClockOrganizer detected\n";
 
 }
