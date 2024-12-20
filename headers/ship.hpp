@@ -4,7 +4,10 @@
 #ifndef SHIP_HPP
 #define SHIP_HPP
 
-#include "roll.hpp" // for the Roll struct
+#include "clock_organizer.hpp"
+#include "roll.hpp"
+#include "weapons.hpp"
+
 #include <array>
 #include <vector>
 
@@ -19,22 +22,12 @@
 #define CANONS 1
 #define MISSILES 0
 
-struct Weapons {
-    std::array <int, 5> _dice; // number of yellow dice, orange dice, blue dice, pink dice
-
-    int& operator[](int i) {return _dice[i];}
-
-    Weapons totalDice (int nb_ships) {return {nb_ships*_dice[0], nb_ships*_dice[1], nb_ships*_dice[2], nb_ships*_dice[3], nb_ships*_dice[4]};}
-
-    bool hasRift () {return (_dice[4]>0);}
-};
-
 struct StateNPCWrapper {
     int _state;
     unsigned long int _npc_score; // npc will allocate their damage to maximize that score
 };
 
-class Ship {
+class Ship: public ClockOrganizer {
     public:
     // stats
     int _number;
@@ -51,8 +44,16 @@ class Ship {
     Ship (int, int, int, int, int, int, Weapons, Weapons);
     Ship (int, int, int, int, int, int, Weapons);
 
+    void initializeClockOrganizer ();
+
+    std::vector<int> iterationToShipState (std::vector<int>);
+    std::vector<int> shipStateToIteration (std::vector<int>);
+
+    std::vector<int> stateToShipState (int);
+    int shipStateToState (std::vector<int>);
+
     //function
-    int totalStates (); //return total number of states of that sip (depend on model)
+    // int totalStates (); //return total number of states of that sip, REDUNDANT with ClockOrganizer
     int countLiveShips (int state); //return number of ships that are alive at that state
     std::vector<int> takeHits    (int, Damage); //returns all possible states that can be reached from taking that damage
     StateNPCWrapper  takeNPCHits (int, Damage); //returns the state an NPC would reach and their NPC score (used to find NPC targets)
@@ -63,18 +64,5 @@ class Ship {
     // which_weapon is either CANONS or MISSILES
 
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif
