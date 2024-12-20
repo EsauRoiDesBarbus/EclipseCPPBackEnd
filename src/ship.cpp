@@ -4,7 +4,9 @@
 
 // in this implementation, the range all possible damage allocations between ships of the same type
 // it is represented as (a0, a1..., an-1) where n is the number of ships of that type
-// a0 is the damage taken by the 1st ship, a1 is how much MORE damage the second ship as taken compared to the 1st ship, and so on
+// an-1 is the damage taken by ALL ships, an-2 is the damage taken by all ships except one and so on
+// that is, the damage taken by ship k in [[0, n-1]] is an-1 + an-2.... + ak
+// the order is such so that whichever way we allocate incoming damage, the clock organizer index always increases, which is necessary for Bellman
 // sum ai is equal to the damage taken by the last ship, hence it is inferior or equal to hull+1
 
 #include "ship.hpp"
@@ -36,16 +38,16 @@ void Ship::initializeClockOrganizer () {
 
 vector<int> Ship::iterationToShipState (vector<int> iteration) {
     vector<int> ship_state(_number, 0);
-    ship_state[0] = iteration[0];
-    for (int ship=1; ship<_number; ship++) ship_state[ship]=ship_state[ship-1]+iteration[ship];
+    ship_state[0] = iteration[_number-1];
+    for (int ship=1; ship<_number; ship++) ship_state[ship]=ship_state[ship-1]+iteration[_number-1-ship];
     return ship_state;
 }
 
 vector<int> Ship::shipStateToIteration (vector<int> ship_state) {
     sort (ship_state.begin(), ship_state.end()); //sort in increasing order
     vector<int> iteration(_number, 0);
-    iteration[0] = ship_state[0];
-    for (int ship=1; ship<_number; ship++) iteration[ship]=ship_state[ship]-ship_state[ship-1];
+    iteration[_number-1] = ship_state[0];
+    for (int ship=1; ship<_number; ship++) iteration[_number-1-ship]=ship_state[ship]-ship_state[ship-1];
     return iteration;
 }
 
@@ -86,12 +88,15 @@ vector<int> Ship::takeHits (int state, Damage damage) {
         vector<int> new_ship_state (_number);
         for (int ship=0; ship<_number; ship++) new_ship_state[ship] = min(initial_ship_state[ship]+damage_taken[ship],_hull+1);
 
+        int new_state = shipStateToState (new_ship_state);
+
         if (DEBUG) {
             cout << "takeHits: initial state + damage = new state. hull=" <<_hull << endl;
             for (int ship=0; ship<_number; ship++) cout << initial_ship_state [ship] << " + " << damage_taken[ship] << " = " << new_ship_state[ship] <<endl;
+            cout << "state transition: " << state << "->" << new_state << endl;
         }
 
-        int new_state = shipStateToState (new_ship_state);
+        
         
         output.push_back (new_state);
 
