@@ -12,7 +12,8 @@
 class BattleResult {
     public: 
     float _attacker_win_chance;
-    std::vector<std::vector<float>> _ship_survival_chance; //for the graph
+    std::vector<std::vector<float>> _attacker_ship_survival_chance; //for the graph
+    std::vector<std::vector<float>> _defender_ship_survival_chance; //for the graph
 
     std::string toString ();
 };

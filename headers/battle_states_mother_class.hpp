@@ -27,7 +27,8 @@ class BattleStates {
     std::vector<int> _states_where_attacker_wins; // list of state index corresponding to a win of the attacker
     std::vector<int> _states_where_defender_wins; // same for defender
 
-    std::vector<std::vector<int>> _live_ships; // for each state, lists how many ships of each type are alive
+    std::vector<std::vector<int>> _live_attacker_ships; // for each state, lists how many ships of each type are alive
+    std::vector<std::vector<int>> _live_defender_ships; // for each state, lists how many ships of each type are alive
 
     // graph edges (the tricky part)
     std::vector< //for each state, 

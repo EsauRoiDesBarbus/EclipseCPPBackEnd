@@ -10,12 +10,20 @@ using namespace std;
 #include <chrono>
 
 int main(){
+    BattleResult result;
+    // use battlestates sub class to test bellman algorithm
+    cout << "Using battlestates sub class to test bellman algorithm.\nShould return 17.03%, 97.57% and 91.83%" << endl; 
+    BattleStates simple_example = CruiserVSAncientBattleStates();
+    result = winChanceAndExpectancyCalculator (simple_example);
+    cout << result.toString () << endl;
 
-    //CruiserVSAncientBattleStates example;
-    //CruiserAndIntVSIntBattleStates example (0); // if arg=1, then win chance is 97.57%, if arg=0, then win chance = 91.83%
-    //cout << example.toString () << endl;
-    //BattleResult result = winChanceAndExpectancyCalculator (example);
-    //cout << result.toString () << endl;
+    simple_example = CruiserAndIntVSIntBattleStates (1); // if arg=1, then win chance is 97.57%, if arg=0, then win chance = 91.83%
+    result = winChanceAndExpectancyCalculator (simple_example);
+    cout << result.toString () << endl;
+
+    simple_example = CruiserAndIntVSIntBattleStates (0); // if arg=1, then win chance is 97.57%, if arg=0, then win chance = 91.83%
+    result = winChanceAndExpectancyCalculator (simple_example);
+    cout << result.toString () << endl;
 
     //Ship two_dreads_with_plasma_turret (2, DRE, 1, 2, 1, 2, {2,2,0,0,0});
     //Ship interceptor (1, INT, 3, 0, 0, 0, {1,0,0,0,0});
@@ -39,7 +47,7 @@ int main(){
     BattleModifiers att({false, false}), def({false, false});
 
     ShipBattleStates battle ({basecruiser, interceptor}, att, {baseancient}, def);
-    BattleResult result = winChanceAndExpectancyCalculator (battle);
+    result = winChanceAndExpectancyCalculator (battle);
     //cout << battle.toString () << endl;
     cout << "simple battle test " << result.toString () << endl;
 

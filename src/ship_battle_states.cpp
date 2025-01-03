@@ -178,10 +178,13 @@ void ShipBattleStates::initializeStateInfo () {
     ClockIterator state_clock = createClockIterator ();
     int total_states = totalStates ();
     int nb_ships = _both_ships_by_initiative.size (); 
+    int nb_attacker_ships = _attacker_ships.size();
+    int nb_defender_ships = _defender_ships.size();
 
     // allocate memory
     _who_is_firing.resize(total_states);
-    _live_ships.resize(total_states);
+    _live_attacker_ships.resize(total_states);
+    _live_defender_ships.resize(total_states);
     _states_where_attacker_wins.resize(0);
     _states_where_defender_wins.resize(0);
 
@@ -192,12 +195,22 @@ void ShipBattleStates::initializeStateInfo () {
         //_live_ships
         int attacker_ships = 0;
         int defender_ships = 0;
-        _live_ships[state].resize(nb_ships);
+        _live_attacker_ships[state].resize(nb_attacker_ships);
+        _live_defender_ships[state].resize(nb_defender_ships);
         for (int ship=0; ship<nb_ships; ship++) {
+            // find the position of the corresponding ship in the user data
+            int place = _both_ships_by_initiative[ship]._place_first_vector;
+            int side = _both_ships_by_initiative[ship]._side;
+
             int alive = _both_ships_by_initiative[ship]->countLiveShips (extended_state[ship]);
-            _live_ships[state][ship] = alive; //TODO : maybe change form of _live_ships ?
-            if (_both_ships_by_initiative[ship]._side == 1) attacker_ships+=alive;
-            else                                            defender_ships+=alive;
+
+            if (side==ATTACKER) {
+                _live_attacker_ships[state][place] = alive;
+                attacker_ships+=alive;
+            } else {
+                _live_defender_ships[state][place] = alive;
+                defender_ships+=alive;
+            }
         }
 
         //_states_where_attacker_wins and _states_where_defender_wins

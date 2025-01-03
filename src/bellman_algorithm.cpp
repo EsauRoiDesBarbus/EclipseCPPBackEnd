@@ -136,9 +136,13 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
 
 
     // forward expectancy calculator
-    int nb_type_ships = battle_states._live_ships[0].size();
-    results._ship_survival_chance.resize (nb_type_ships);
-    for (int i=0; i<nb_type_ships; ++i) results._ship_survival_chance[i].resize (battle_states._live_ships[0][i]); //give the initial number of ships
+    int nb_attacker_ships = battle_states._live_attacker_ships[0].size();
+    results._attacker_ship_survival_chance.resize (nb_attacker_ships);
+    for (int i=0; i<nb_attacker_ships; ++i) results._attacker_ship_survival_chance[i].resize (battle_states._live_attacker_ships[0][i]); //give the initial number of ships
+
+    int nb_defender_ships = battle_states._live_defender_ships[0].size();
+    results._defender_ship_survival_chance.resize (nb_defender_ships);
+    for (int i=0; i<nb_defender_ships; ++i) results._defender_ship_survival_chance[i].resize (battle_states._live_defender_ships[0][i]); //give the initial number of ships
 
 
     vector<float> expectancy(nb_states, 0.0);
@@ -152,18 +156,18 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
         //if attacker wins, win chance is 1 if defender wins, win chance is 0
         if        ((attacker_win_it<nb_attacker_wins)&&(state==battle_states._states_where_attacker_wins[attacker_win_it])) {
             attacker_win_it++;
-            // add surviving ships to results
-            for (int i=0; i<nb_type_ships; ++i) {
-                int ships_of_that_type_alive = battle_states._live_ships[state][i];
-                for (int j=0; j<ships_of_that_type_alive; ++j) results._ship_survival_chance[i][j] += expectancy[state];
+            // add surviving attacker ships to results
+            for (int ship=0; ship<nb_attacker_ships; ++ship) {
+                int ships_of_that_type_alive = battle_states._live_attacker_ships[state][ship];
+                for (int j=0; j<ships_of_that_type_alive; ++j) results._attacker_ship_survival_chance[ship][j] += expectancy[state];
             }
             state++;
         } else if ((defender_win_it<nb_defender_wins)&&(state==battle_states._states_where_defender_wins[defender_win_it])) {
             defender_win_it++;
-            // add surviving ships to probability
-            for (int i=0; i<nb_type_ships; ++i) {
-                int ships_of_that_type_alive = battle_states._live_ships[state][i];
-                for (int j=0; j<ships_of_that_type_alive; ++j) results._ship_survival_chance[i][j] += expectancy[state];
+            // add surviving defender ships to results
+            for (int ship=0; ship<nb_defender_ships; ++ship) {
+                int ships_of_that_type_alive = battle_states._live_defender_ships[state][ship];
+                for (int j=0; j<ships_of_that_type_alive; ++j) results._defender_ship_survival_chance[ship][j] += expectancy[state];
             }
             state++;
         } else if ((bundle_it<nb_bundles)&&(state==get<0>(battle_states._state_bundles[bundle_it]))) {
@@ -269,13 +273,20 @@ int findBestAllocation (int sign, std::vector<int>& allocations, std::vector<flo
 string BattleResult::toString () {
     stringstream output;
 
-    output << "Attacker win chance = " << _attacker_win_chance << ", surviving ship probability= ";
-    int nb_types = _ship_survival_chance.size ();
-    for (int i=0; i<nb_types; ++i){
-        int ships_of_that_type= _ship_survival_chance[i].size ();
-        for (int j=0; j<ships_of_that_type; ++j) output << _ship_survival_chance[i][j] << ", ";
+    output << "Attacker win chance = " << _attacker_win_chance << ", chance of survival:";
+    int nb_attacker_ships = _attacker_ship_survival_chance.size ();
+    for (int i=0; i<nb_attacker_ships; ++i){
+        if (i>0) output << ",";
+        output << " attship" << i+1 << ":"; 
+        int ships_of_that_type= _attacker_ship_survival_chance[i].size ();
+        for (int j=0; j<ships_of_that_type; ++j) output  << " " << _attacker_ship_survival_chance[i][j];
     }
-    
+    int nb_defender_ships = _defender_ship_survival_chance.size ();
+    for (int i=0; i<nb_defender_ships; ++i){
+        output << ", defship" << i+1 << ":"; 
+        int ships_of_that_type= _defender_ship_survival_chance[i].size ();
+        for (int j=0; j<ships_of_that_type; ++j) output << " " << _defender_ship_survival_chance[i][j];
+    }
     return output.str ();
 }
 

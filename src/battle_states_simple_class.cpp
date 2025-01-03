@@ -27,12 +27,16 @@ CruiserVSAncientBattleStates::CruiserVSAncientBattleStates (){
     _state_bundles[3] = make_tuple(8,9);
 
     //live ships
-    _live_ships.resize (16);
-    for (int i=0; i<16; i++)  _live_ships[ i] = {1, 1};
-    _live_ships[ 4] = {1, 0}; _live_ships[ 5] = {1, 0};
-    _live_ships[10] = {1, 0}; _live_ships[11] = {1, 0};
-    _live_ships[12] = {0, 1}; _live_ships[13] = {0, 1};
-    _live_ships[14] = {0, 1}; _live_ships[15] = {0, 1};
+    _live_attacker_ships.resize (16);
+    _live_defender_ships.resize (16);
+    for (int i=0; i<16; i++) {
+        _live_attacker_ships[i] = {1};
+        _live_defender_ships[i] = {1};
+    }
+    _live_defender_ships[ 4] = {0}; _live_defender_ships[ 5] = {0};
+    _live_defender_ships[10] = {0}; _live_defender_ships[11] = {0};
+    _live_attacker_ships[12] = {0}; _live_attacker_ships[13] = {0};
+    _live_attacker_ships[14] = {0}; _live_attacker_ships[15] = {0};
 
 
     //hard coded graph (the tricky part)
@@ -73,14 +77,19 @@ CruiserAndIntVSIntBattleStates::CruiserAndIntVSIntBattleStates (int cruiser_comp
     for (int i =0; i<5; i++) _state_bundles[i] = make_tuple(3*i,3*i+2);
 
     //live ships
-    _live_ships.resize (21);
-    for (int i=0; i<18; i++)  _live_ships[ i] = {1, 1, 1};
-    _live_ships[15] = {0, 0, 1};
-    _live_ships[16] = {0, 0, 1};
-    _live_ships[17] = {0, 0, 1};
-    _live_ships[18] = {1, 1, 0};
-    _live_ships[19] = {1, 0, 0};
-    _live_ships[20] = {0, 1, 0};
+    _live_attacker_ships.resize (21);
+    _live_defender_ships.resize (21);
+    for (int i=0; i<18; i++)    {
+        _live_attacker_ships [i] = {1, 1};
+        _live_defender_ships [i] = {1};
+    }
+    _live_attacker_ships[18] = {0, 0};
+    _live_attacker_ships[19] = {0, 0};
+    _live_attacker_ships[20] = {0, 0};
+
+    _live_attacker_ships[18] = {1, 1};
+    _live_attacker_ships[19] = {1, 0};
+    _live_attacker_ships[20] = {0, 1};
     
 
     //hard coded graph (the tricky part)
@@ -101,9 +110,9 @@ CruiserAndIntVSIntBattleStates::CruiserAndIntVSIntBattleStates (int cruiser_comp
             _dice_rolls[3*i  ][1] = {float (1.0/6.0), {3*i+4}};
         } else {
             //attack interceptor is dead
-            _live_ships[3*i  ][1] = 0;
-            _live_ships[3*i+1][1] = 0;
-            _live_ships[3*i+2][1] = 0;
+            _live_attacker_ships[3*i  ][1] = 0;
+            _live_attacker_ships[3*i+1][1] = 0;
+            _live_attacker_ships[3*i+2][1] = 0;
 
             _dice_rolls[3*i+1].resize (1);
             _dice_rolls[3*i+1][0] = {float (1.0), {3*i+2}};
@@ -119,9 +128,9 @@ CruiserAndIntVSIntBattleStates::CruiserAndIntVSIntBattleStates (int cruiser_comp
             _dice_rolls[3*i  ][1] = {float (1.0/6.0), {3*i+7}};
         } else {
             //attack cruiser is dead
-            _live_ships[3*i  ][0] = 0;
-            _live_ships[3*i+1][0] = 0;
-            _live_ships[3*i+2][0] = 0;
+            _live_attacker_ships[3*i  ][0] = 0;
+            _live_attacker_ships[3*i+1][0] = 0;
+            _live_attacker_ships[3*i+2][0] = 0;
 
             _dice_rolls[3*i+2].resize (1);
             _dice_rolls[3*i+2][0] = {float (1.0), {3*i}};
