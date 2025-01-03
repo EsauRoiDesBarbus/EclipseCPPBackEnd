@@ -12,7 +12,7 @@ DEPS = $(patsubst %.o,$(DEPDIR)/%.d,$(OTMP))
 
 # Variables
 CC = g++
-CPPFLAGS =-fPIC -O0 -Iheaders -std=c++11 -Wall -Wextra 
+CPPFLAGS =-fPIC -O3 -Iheaders -std=c++11 -Wall -Wextra 
 LIBS = -lpthread
 
 all: init $(OBJS)
