@@ -132,6 +132,22 @@ int main(){
         //cout << battle2.toString () << endl;
         //cout << "rift cruiser test " << result2.toString () << endl;
 
+
+        // antimatter splitter test
+        shared_ptr<Ship> red_missile = make_shared<Ship> (Ship(1, CRU, 0, 0, 2, 0, {0,0,0,0,0}, {0,0,0,4,0}));
+        shared_ptr<Ship> base_int_x4 = make_shared<Ship> (Ship(4, INT, 3, 0, 0, 0, {1,0,0,0,0}));
+        battle = ShipBattleStates({red_missile}, att, {base_int_x4}, def);
+        result = winChanceAndExpectancyCalculator (battle);
+        //cout << battle1.toString () << endl;
+        cout << "4 red missiles vs 4 ints, without antimatter splitter: " << result.toString () << endl;
+        att._antimatter_splitter = true;
+        battle = ShipBattleStates({red_missile}, att, {base_int_x4}, def);
+        result = winChanceAndExpectancyCalculator (battle);
+        //cout << battle1.toString () << endl;
+        cout << "4 red missiles vs 4 ints, with antimatter splitter:    " << result.toString () << endl;
+
+
+
         //perf test
         shared_ptr<Ship> elliot_ints = make_shared<Ship> (Ship(4, INT, 4, 0, 2, 0, {0,1,0,0,0}));
         shared_ptr<Ship> elliot_crus = make_shared<Ship> (Ship(3, CRU, 4, 2, 4, 0, {0,1,0,0,0}));

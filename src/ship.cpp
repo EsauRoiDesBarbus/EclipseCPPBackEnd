@@ -138,7 +138,7 @@ StateNPCWrapper Ship::takeNPCHits (int state, Damage damage) {
     return output;
 }
 
-vector<RollUnallocated> Ship::listRolls (int nb_firing_ships, int which_weapon, std::vector<int> shields) {
+vector<RollUnallocated> Ship::listRolls (int nb_firing_ships, int which_weapon, std::vector<int> shields, bool antimatter_splitter) {
     // range all possible results of dice using a clock like system
     vector<RollUnallocated> rolls; // output, should be a vector with all possible rolls
 
@@ -164,14 +164,12 @@ vector<RollUnallocated> Ship::listRolls (int nb_firing_ships, int which_weapon, 
 
     float total_proba =0.0; //for DEBUG, should be almost equal to 1.0
 
-    // the following algorithm will convert those misses into all possible combination of results in a clock like manner
-
-    bool finished = false;
-
+    bool finished = false; // alternative way to check if we are done
     for (int _=0; _<total_states; _++) {
-    //while (finished==false) {
-        // the DiceClock class does all the heavy work
+        // convert clock to roll
         RollUnallocated roll = dice_organizer.toRollUnallocated (clock_iterator);
+        // split antimatter if the player has that tech
+        if (antimatter_splitter) roll.splitAntimatter ();
 
         total_proba += roll._proba;
 

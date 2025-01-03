@@ -45,6 +45,11 @@ struct RollUnallocated {
         output._damages[0][0] = _self_hits;
         return output;
     }
+
+    void splitAntimatter () {
+        //split each 4 damage die hit into 4 one damage hit
+        for (int i=0; i<int(_damages.size()); i++) _damages[i].splitAntimatter();
+    }
 };
 
 

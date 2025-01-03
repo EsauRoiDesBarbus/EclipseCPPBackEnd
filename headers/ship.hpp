@@ -60,7 +60,7 @@ class Ship: public ClockOrganizer {
 
     bool hasRift () {return (_canons.hasRift());} //return true if the ship has rift weapons
 
-    std::vector<RollUnallocated> listRolls (int nb_ships, int which_weapon, std::vector<int> shields); //takes the number of ships as argument as it influences results
+    std::vector<RollUnallocated> listRolls (int nb_ships, int which_weapon, std::vector<int> shields, bool antimatter_splitter=false); //takes the number of ships as argument as it influences results
     // which_weapon is either CANONS or MISSILES
 
 };

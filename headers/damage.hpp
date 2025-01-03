@@ -18,6 +18,12 @@ struct Damage {
         output<<"("<<_damage_faces[0]<<","<<_damage_faces[1]<<","<<_damage_faces[2]<<","<<_damage_faces[3]<<")";
         return output.str();
     }
+
+    void splitAntimatter () {
+        //split each 4 damage die hit into 4 one damage hit
+        _damage_faces[0]+= 4*_damage_faces[3];
+        _damage_faces[3] = 0;
+    }
 };
 
 #endif

@@ -373,12 +373,12 @@ void ShipBattleStates::initializeDiceRolls () {
         big_table_of_rolls[nb_ships+ship].resize (max_ships+1); //first cell is when 0 ships are alive
         int player = _both_ships_by_initiative[ship]._side; //1 if attacker, -1 if defender
         for (int alive=0; alive<=max_ships; alive++) {
-            if (player==ATTACKER) big_table_of_rolls[         ship][alive] = _both_ships_by_initiative[ship]->listRolls (alive, MISSILES, defender_shields);
-            else                  big_table_of_rolls[         ship][alive] = _both_ships_by_initiative[ship]->listRolls (alive, MISSILES, attacker_shields);
+            if (player==ATTACKER) big_table_of_rolls[         ship][alive] = _both_ships_by_initiative[ship]->listRolls (alive, MISSILES, defender_shields, _attacker_bonus._antimatter_splitter);
+            else                  big_table_of_rolls[         ship][alive] = _both_ships_by_initiative[ship]->listRolls (alive, MISSILES, attacker_shields, _defender_bonus._antimatter_splitter);
         }
         for (int alive=0; alive<=max_ships; alive++) {
-            if (player==ATTACKER) big_table_of_rolls[nb_ships+ship][alive] = _both_ships_by_initiative[ship]->listRolls (alive,   CANONS, defender_shields);
-            else                  big_table_of_rolls[nb_ships+ship][alive] = _both_ships_by_initiative[ship]->listRolls (alive,   CANONS, attacker_shields);
+            if (player==ATTACKER) big_table_of_rolls[nb_ships+ship][alive] = _both_ships_by_initiative[ship]->listRolls (alive,   CANONS, defender_shields, _attacker_bonus._antimatter_splitter);
+            else                  big_table_of_rolls[nb_ships+ship][alive] = _both_ships_by_initiative[ship]->listRolls (alive,   CANONS, attacker_shields, _defender_bonus._antimatter_splitter);
         }
     }
 
