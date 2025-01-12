@@ -39,6 +39,8 @@ class BattleStates {
 
     // no constructor, we initialize all vectors empty, it's the subclasses that will fill them
 
+    bool _timeout=false; // becomes true if the initialization times out
+
     // utility
     std::string toString (); //returns
 

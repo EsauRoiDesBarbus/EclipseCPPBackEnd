@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 #include <sstream>
+#include <ctime>
 
 #define ATTACKER  1
 #define DEFENDER -1
@@ -50,7 +51,6 @@ class ShipBattleStates: public BattleStates, public ClockOrganizer {
     BattleModifiers _attacker_bonus;
     BattleModifiers _defender_bonus;
 
-
     // pre-treatment
     std::vector<ShipWrapper> _both_ships_by_initiative;
     std::vector<ShipWrapper> _attacker_ships_by_shield;
@@ -70,7 +70,7 @@ class ShipBattleStates: public BattleStates, public ClockOrganizer {
     void initializeStateInfo ();
 
     // compute graph edges 
-    void initializeDiceRolls ();
+    void initializeDiceRolls (time_t timeout); //only function to have a timout as it is the longest part of the entire project
     Roll allocateRoll   (ExtendedState&, RollUnallocated&, std::vector<ShipWrapper>&);
     Roll allocateNPCRoll(ExtendedState&, RollUnallocated&, std::vector<ShipWrapper>&);
     
@@ -78,7 +78,7 @@ class ShipBattleStates: public BattleStates, public ClockOrganizer {
     void initialize (); //does all previous states in order
 
     // constructor
-    ShipBattleStates (std::vector<std::shared_ptr<Ship>>, BattleModifiers, std::vector<std::shared_ptr<Ship>>, BattleModifiers);
+    ShipBattleStates (std::vector<std::shared_ptr<Ship>>, BattleModifiers, std::vector<std::shared_ptr<Ship>>, BattleModifiers, time_t timeout=60);
 };
 
 

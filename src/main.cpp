@@ -152,8 +152,6 @@ int main(){
         result = winChanceAndExpectancyCalculator (battle);
         cout << "ships with only missiles, should return 25%: " << result.toString () << endl;
 
-
-
         //perf test
         shared_ptr<Ship> elliot_ints = make_shared<Ship> (Ship(4, INT, 4, 0, 2, 0, {0,1,0,0,0}));
         shared_ptr<Ship> elliot_crus = make_shared<Ship> (Ship(3, CRU, 4, 2, 4, 0, {0,1,0,0,0}));
@@ -169,6 +167,13 @@ int main(){
         clock_t end = clock();
         cout << "fatefull battle Etienne Elliot " << result.toString () << endl;
         cout << "perf test " << double(end-start)/CLOCKS_PER_SEC << "s" << endl;
+
+        // timeout test
+        start = clock();
+        battle = ShipBattleStates ({elliot_ints, elliot_crus}, att, {etienn_dres, etienn_ints}, def, 1);
+        result = winChanceAndExpectancyCalculator (battle, 1);
+        end = clock();
+        cout << "timeout test (should return a little more than 1sec) " << double(end-start)/CLOCKS_PER_SEC << "s" << endl;
 
     }
     

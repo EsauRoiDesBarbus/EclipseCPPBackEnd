@@ -9,12 +9,18 @@
 
 using namespace std;
 
-BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
+BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states, time_t timeout) {
     // this algorithm first compute the value (= win chance of the attacker) going backward
     // as well as the optimal damage allocation of each roll
     // then it uses that information to compute expectancy forward
-
     BattleResult results;
+    // check if the code has already timed out during BattleStates initialization
+    if (battle_states._timeout) {
+        results._timeout = true;
+        return results;
+    }
+    time_t start = time(nullptr); // for timeout
+
     int nb_states = battle_states._who_is_firing.size(); //total number of states
 
     //store optimal allocation of each roll in a vector
@@ -25,12 +31,8 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
     > optimal_allocations (battle_states._dice_rolls.size ());
     for (int state =0; state<nb_states;state++) optimal_allocations [state].resize (battle_states._dice_rolls[state].size());
 
-    
-
-
     // backward win chance calculator
     vector<float> win_chance(nb_states, -1.0); //-1 means uninitialized
-
 
     int nb_attacker_wins = battle_states._states_where_attacker_wins.size();
     int nb_defender_wins = battle_states._states_where_defender_wins.size();
@@ -42,6 +44,11 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
 
     int state = nb_states-1;
     while (state>=0) { //backward loop
+        double elapsed = difftime(time(nullptr), start);
+        if (elapsed>timeout) {
+            results._timeout = true;
+            return results;
+        }
         //if attacker wins, win chance is 1 if defender wins, win chance is 0
         if        ((attacker_win_it>=0)&&(state==battle_states._states_where_attacker_wins[attacker_win_it])) {
             attacker_win_it--;
@@ -153,6 +160,11 @@ BattleResult winChanceAndExpectancyCalculator (BattleStates& battle_states) {
     bundle_it = 0;
     state = 0;
     while (state<nb_states) {
+        double elapsed = difftime(time(nullptr), start);
+        if (elapsed>timeout) {
+            results._timeout = true;
+            return results;
+        }
         //if attacker wins, win chance is 1 if defender wins, win chance is 0
         if        ((attacker_win_it<nb_attacker_wins)&&(state==battle_states._states_where_attacker_wins[attacker_win_it])) {
             attacker_win_it++;

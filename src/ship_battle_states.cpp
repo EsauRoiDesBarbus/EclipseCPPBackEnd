@@ -345,8 +345,10 @@ Roll ShipBattleStates::allocateNPCRoll(ExtendedState& extended_state, RollUnallo
     return output;
 }
 
-void ShipBattleStates::initializeDiceRolls () {
+void ShipBattleStates::initializeDiceRolls (time_t timeout) {
     // initialize _dice_rolls and _state_bundles
+    time_t start = time(nullptr); // for timeout
+
     ClockIterator state_clock = createClockIterator ();
     int total_states = totalStates ();
     int nb_ships = _both_ships_by_initiative.size (); 
@@ -391,6 +393,11 @@ void ShipBattleStates::initializeDiceRolls () {
     int attacker_win_it =0;
     int defender_win_it =0;
     for (int state=0; state<total_states; state++){
+        double elapsed = difftime(time(nullptr), start);
+        if (elapsed>timeout) {
+            _timeout = true;
+            return;
+        }
         // check if victory so we avoid unnecessary computations
         if        ((attacker_win_it<nb_attacker_wins)&&(state==_states_where_attacker_wins[attacker_win_it])) {
             attacker_win_it++;
@@ -454,11 +461,11 @@ void ShipBattleStates::initializeDiceRolls () {
 ////////////////////////////////////
 // ShipBattleStates : constructor //
 ////////////////////////////////////
-ShipBattleStates::ShipBattleStates (std::vector<shared_ptr<Ship>> att_ships, BattleModifiers att, std::vector<shared_ptr<Ship>> def_ships, BattleModifiers def): 
+ShipBattleStates::ShipBattleStates (std::vector<shared_ptr<Ship>> att_ships, BattleModifiers att, std::vector<shared_ptr<Ship>> def_ships, BattleModifiers def, time_t timeout): 
     _attacker_ships(att_ships), _defender_ships(def_ships), _attacker_bonus(att), _defender_bonus(def) {
     initializeShipWrapperVectors ();
     initializeClockOrganizer ();
     initializeStateInfo ();
-    initializeDiceRolls ();
+    initializeDiceRolls (timeout);
 
 }
