@@ -14,4 +14,5 @@ print (test.solveBattle())
 test.addModifier ("DEF", "NPC")
 
 print (test.solveBattle())
+print (test.getAttackerWinChance())
 

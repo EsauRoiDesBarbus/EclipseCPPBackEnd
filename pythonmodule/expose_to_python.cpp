@@ -89,6 +89,10 @@ struct battleBuilder {
 
         return _result.toString ();
     }
+
+    float getAttackerWinChance () {
+        return _result._attacker_win_chance;
+    }
 };
 
 BOOST_PYTHON_MODULE(eclipseCpp) {
@@ -97,6 +101,7 @@ BOOST_PYTHON_MODULE(eclipseCpp) {
         .def("addShip"    , &battleBuilder::addShip)
         .def("addModifier", &battleBuilder::addModifier)
         .def("solveBattle", &battleBuilder::solveBattle)
+        .def("getAttackerWinChance", &battleBuilder::getAttackerWinChance)
     ;
     class_<Weapons>("Weapons", init<int, int, int, int, int>());
 }
