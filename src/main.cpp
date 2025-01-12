@@ -146,6 +146,12 @@ int main(){
         //cout << battle1.toString () << endl;
         cout << "4 red missiles vs 4 ints, with antimatter splitter:    " << result.toString () << endl;
 
+        // stuck in a loop test
+        shared_ptr<Ship> only_missile = make_shared<Ship> (Ship(1, INT, 3, 0, 2, 0, {0,0,0,0,0}, {1,0,0,0,0}));
+        battle = ShipBattleStates({only_missile}, att, {only_missile}, def);
+        result = winChanceAndExpectancyCalculator (battle);
+        cout << "ships with only missiles, should return 25%: " << result.toString () << endl;
+
 
 
         //perf test

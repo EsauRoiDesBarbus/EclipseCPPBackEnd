@@ -59,6 +59,7 @@ class Ship: public ClockOrganizer {
     StateNPCWrapper  takeNPCHits (int, Damage); //returns the state an NPC would reach and their NPC score (used to find NPC targets)
 
     bool hasRift () {return (_canons.hasRift());} //return true if the ship has rift weapons
+    bool hasCanons () {return (_canons.hasDice());} //return true if the ship has canons
 
     std::vector<RollUnallocated> listRolls (int nb_ships, int which_weapon, std::vector<int> shields, bool antimatter_splitter=false); //takes the number of ships as argument as it influences results
     // which_weapon is either CANONS or MISSILES

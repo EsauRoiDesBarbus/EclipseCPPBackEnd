@@ -197,6 +197,7 @@ void ShipBattleStates::initializeStateInfo () {
         int defender_ships = 0;
         _live_attacker_ships[state].resize(nb_attacker_ships);
         _live_defender_ships[state].resize(nb_defender_ships);
+        bool attacker_has_no_canons = true; //if we're in a canon round and the attacker has no canons, they can't win
         for (int ship=0; ship<nb_ships; ship++) {
             // find the position of the corresponding ship in the user data
             int place = _both_ships_by_initiative[ship]._place_first_vector;
@@ -207,6 +208,7 @@ void ShipBattleStates::initializeStateInfo () {
             if (side==ATTACKER) {
                 _live_attacker_ships[state][place] = alive;
                 attacker_ships+=alive;
+                if ((alive>0)and(_both_ships_by_initiative[ship]->hasCanons())) attacker_has_no_canons = false;
             } else {
                 _live_defender_ships[state][place] = alive;
                 defender_ships+=alive;
@@ -216,6 +218,7 @@ void ShipBattleStates::initializeStateInfo () {
         //_states_where_attacker_wins and _states_where_defender_wins
         if      (attacker_ships==0) _states_where_defender_wins.push_back(state);
         else if (defender_ships==0) _states_where_attacker_wins.push_back(state);
+        else if ((attacker_has_no_canons)and(extended_state[ROUND]>=nb_ships)) _states_where_defender_wins.push_back(state);
 
         //_who_is_firing
         int round = extended_state[ROUND];

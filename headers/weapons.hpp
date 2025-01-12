@@ -15,6 +15,7 @@ struct Weapons {
     Weapons totalDice (int nb_ships) {return {nb_ships*_dice[0], nb_ships*_dice[1], nb_ships*_dice[2], nb_ships*_dice[3], nb_ships*_dice[4]};}
 
     bool hasRift () {return (_dice[4]>0);}
+    bool hasDice () {return (_dice[0]>0||_dice[1]>0||_dice[2]>0||_dice[3]>0||_dice[4]>0);}
 
     std::string toString () {
         std::stringstream output;
