@@ -4,7 +4,7 @@ Battle calculator for Eclipse with Bellman equation programming, but in C++ this
 # Compiling
 This projet uses a `Makefile` with the following commands:
 - `make`: builds the entire project (except python library) and creates the executable `main`, which is a sequence of tests by default.
-- `make exe`: builds projetc then runs `main`.
+- `make exe`: builds project then runs `main`.
 - `make pythonmodule`: builds a python module called `eclipseCpp`. YOU NEED TO HAVE BOOST INSTALLED, you may also need to change its location in `Makefile`.
 - `make clean`: deletes everything except source code.
 
@@ -14,7 +14,7 @@ This library can be used, either with the python module, or by editing `src/main
 This project is an algorithm to solve Eclipse battles.  
 **Input**: list of ships and battle modifiers of the attacker, list of ships and battle modifiers of the defender.  
 **Output**: win chance of the attacker, survival chance of each ship.  
-It is assumed that stalemates are wins for the defender, hence win chance of the defender is=1-win chance of the defender.  
+It is assumed that stalemates are wins for the defender, hence win chance of the defender is=1-win chance of the attacker.  
 The survival chance of a ship type is an array, the first float is the survival chance of the last ship of that type to die, which is also the probability of 1 ship of that type or more surviving; the second float is the survival chance of the second to last ship to die, which is also the probability of 2 ships or more surviving; and so on...
 
 Flow:
@@ -120,11 +120,11 @@ Those object are used to order all integer vectors: $$(a_0, a_1, a_2\cdots, b_0,
 `ClockIterator` can iterate on those integer vectors, in a clock-like manner *(hence the name)*: it increments $a_0$, unless $\sum a_i = A$, in which case it sets $a_0$ to 0 and increments $a_1$, and so on.
 `ClockOrganizer` can map a given vector to its index and vice versa.
 
-This particular problem comes up surprisingly often in this project, hence the following classes inherit from `ClockOrganizer` 
-- `ShipBattleStates`,
-- `Ship`,
-- `DiceOrganizer`,
-- `SingleDamageOrganizer`.
+This particular problem comes up surprisingly often in this project, hence the following classes inherit from `ClockOrganizer`:
+- `ShipBattleStates` to order battle states,
+- `Ship` to order ship states,
+- `DiceOrganizer` to order possible results of dice,
+- `SingleDamageOrganizer` to order possible damage allocations between enemy ships of a same type.
 
 ### single_damage_organizer
 Defines the `SingleDamageOrganizer` class.
