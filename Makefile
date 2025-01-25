@@ -21,10 +21,10 @@ all: init $(OBJS)
 
 pythonmodule: all
 	@echo Building the python module...
-	$(CC) -shared -fPIC $(OBJS) -I/usr/include/python3.8/ -I/usr/include/boost/ $(CPPFLAGS) pythonmodule/expose_to_python.cpp -o eclipseCpp.so -L/usr/lib/x86_64-linux-gnu -lboost_python38 -lpython3.8 $(LIBS)
+	$(CC) -shared -fPIC $(OBJS) $(CPPFLAGS) pythonmodule/ctype_module.cpp -o eclipseCpp.so $(LIBS)
 
 	@echo Testing the python module...
-	python3 test.py
+	python3 pythonmodule/test.py
 
 init:
 	@echo Initilizing...
