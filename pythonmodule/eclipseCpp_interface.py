@@ -207,7 +207,7 @@ class Battle:
 
         # check for timeout TODO
         if self._result_vector[0]<0:
-            return 'Timeout'
+            return 'TIMEOUT'
         else:
             return 'OK'
     
@@ -223,24 +223,24 @@ class Battle:
         other_types = []
         for ship in self._attacker_ships:
             if   (ship._type not in ["INT", "CRU", "DRE"]): # check for other types
-                return "Attacker has unknown ship type"
+                return "BAD_ARGUMENT: UNKNOWN SHIP TYPE"
             elif (ship._type in other_types): # check for duplicates
-                return "Attacker has multiple instances of the same ship type"
+                return "BAD_ARGUMENT: MULTIPLE INSTANCES OF THE SAME SHIP TYPE"
             else:
                 other_types.append(ship._type)
                 if (ship._number>max_number[ship._type]): # check for too many ships
-                    return "A ship type has too many ships"
+                    return "BAD_ARGUMENT: TYPE HAS TOO MANY SHIPS"
         # check defender
         other_types = []
         for ship in self._attacker_ships:
             if   (ship._type not in ["INT", "CRU", "DRE", "SBA"]): # check for other types
-                return "Defender has unknown ship type"
+                return "BAD_ARGUMENT: UNKNOWN SHIP TYPE"
             elif (ship._type in other_types): # check for duplicates
-                return "Defender has multiple instances of the same ship type"
+                return "BAD_ARGUMENT: MULTIPLE INSTANCES OF THE SAME SHIP TYPE"
             else:
                 other_types.append(ship._type)
                 if (ship._number>max_number[ship._type]): # check for too many ships
-                    return "A ship type has too many ships"
+                    return "BAD_ARGUMENT: TYPE HAS TOO MANY SHIPS"
 
         return "OK"
     
