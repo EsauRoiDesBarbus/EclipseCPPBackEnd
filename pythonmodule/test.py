@@ -8,4 +8,4 @@ dre = Ship (1, "DRE", 1, 2, 1, 0, [2,0,0,0,0], [0,0,0,0,0]) # base DRE
 battle = Battle ([int, dre], BattleModifier(), [cru], BattleModifier())
 
 print (battle.solveBattle())
-print (vectorToResult(battle._result_vector, battle))
+print (battle.getResult())

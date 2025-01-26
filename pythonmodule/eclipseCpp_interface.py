@@ -254,6 +254,10 @@ class Battle:
         else:
             return True
     
+    def getResult (self):
+        # converts the result vector to a dictionnary
+        return vectorToResult(self._result_vector, self)
+    
 def vectorToResult (vec, battle):
     # converts a vector to a battle result
     # need a battle as argument to know which ship types are in the battle
