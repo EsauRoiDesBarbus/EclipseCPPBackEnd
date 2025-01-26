@@ -4,3 +4,5 @@ main
 **.json
 
 **.so
+
+pythonmodule/__pycache__/**
