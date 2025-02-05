@@ -5,12 +5,12 @@ Battle calculator for Eclipse with Bellman equation programming, but in C++ this
 This projet uses a `Makefile` with the following commands:
 - `make`: builds the entire project (except python library) and creates the executable `main`, which is a sequence of tests by default.
 - `make exe`: builds project then runs `main`.
-- `make pythonmodule`: builds a python module called `eclipseCpp`. YOU NEED TO HAVE BOOST INSTALLED, you may also need to change its location in `Makefile`.
+- `make pythonmodule`: builds a python module called `eclipseCpp`.
 - `make clean`: deletes everything except source code.
 
 This library can be used, either with the python module, or by editing `src/main.cpp` (and calling `make exe`).
 
-# Architecture
+# Overview
 This project is an algorithm to solve Eclipse battles.  
 **Input**: list of ships and battle modifiers of the attacker, list of ships and battle modifiers of the defender.  
 **Output**: win chance of the attacker, survival chance of each ship.  
@@ -22,10 +22,39 @@ Flow:
 2. Battle info is used to create a `ShipBattleStates` object, which is a stochastic graph modeling the battle.
 3. A Bellman value function algorithm is run on that `ShipBattleStates` object to compute win chance and ship survival chances.
 
-Here is a file by file overview of the project, which was developed in reverse order.
+I use Bellman Equation Programming to achieve **optimal decision making**.
+In a battle of Eclipse, players must choose which enemy ship to target, and they are often facing choices like "do I eliminate a small ship rightaway, or do I start damaging a big ship?" which, given the number of stats and variables in Eclipse, can be a difficult decision to take.
+Bellman Equation Programming ensures that players always take the decision that maximizes their chance of winning the battle.
 
 
-## Calculating win chance
+# How does it work?
+
+I model the battle by a stochastic graph. Each possible state of the battle (that is, each combination of ship hit point values and firing turn) is a vertex of the graph (circles and rectangles), each possible result of a roll of dice is an edge of the graph (arrow) that can lead to multiple other vertices, depending on how players allocate their damage.
+
+
+![alt text](image.png)
+
+Fig 1: the stochastic graph on when there are 2 ships with 1 hull and 1 canon each
+
+I propagate a Bellman value function (here, the chance of the attacker winning) on that graph by induction. Indeed, if I take a terminal state of the battle (rectangles), then either the attacker won or lost, so their win chance is either 100% or 0%. From there I can use graph theory and linear algebra to compute the win chance of the attacker on any "second to last" state, that is a state where there are only two ships left that are one roll away from being eliminated.
+Once I've done that, I can compute the win chance of the attacker on any "third to last" states and so on.
+
+When facing a choice, that is an edge that can lead to multiple vertices, the attacker will choose the vertex with the highest attacker win chance, while the defender will choose the vertex with the lowest attacker win chance. This achieves optimal decision making.
+
+This backward swipe of the graph yields the chance of the attacker winning. Afteward, I do a forward swipe of the graph to expectancy of each state happening, which allows me to compute the probability of each ship surviving.
+
+
+# How is it implemented?
+
+Here is a file by file overview of the project.
+It can be cut down into 3 sections:
+1. Bellman Equation Programming,
+2. Creating the battle graph,
+3. Helper classes,
+4. C++ and Python interface.
+
+
+## Bellman Equation Programming
 The calculator part of the algorithm is almost agnostic of the context of Eclipse, to be easy to test and maintain.
 
 ### bellman_algorithm
@@ -136,13 +165,54 @@ Defines the `DiceOrganizer` class.
 This is used to range all possible results of dice, using `ClockOrganizer`.
 The difficulty here is that the number of possible results varies in Eclipse: shield discrepancies within a player fleet leads to "partial hits", that is, hits that can be dealt to some ships but not the others, and there may be between 0 and 3 types of partial hits as a fleet contains up to 4 ships that may or may not have different shield values.
 
-## Python Module
-This calculator is meant to be used from Python rather than C++.
+## C++ and Python interface.
+This calculator is meant to be used from Python or C++.
 
-### expose_to_python
+### main
+Main is by default a collection of test cases.
+Users may edit this file with battle info and and use `make exe`
+
+### eclipseCpp python module
+
+The release `eclipseCpp.so` exports the project as a C function `solveEclipseBattle`  
+**Input:** an integer array of size 116:  
+-  0:15  attacker INT stats,
+- 16:31  attacker CRU stats,
+- 32:47  attacker DRE stats,
+- 48 is the attacker npc? 49 does the attacker have antimmater splitter?
+- 50:65  defender INT stats,
+- 66:81  defender CRU stats,
+- 82:97  defender DRE statst,
+- 98:113 defender SBA stats,
+- 114 is the defender npc? 115 does the defender have antimmater splitter?  
+Ships stats are entered as follows
+- 0 Number of ships of that type,
+- 1 Initiative,
+- 2 hull,
+- 3 computer,
+- 4 shield,
+- 5 regen,
+- 6:10 canons (number of yellow dice, orange, blue, red, pink),
+- 11:15 missiles (same as above).
+
+**Output:** a float array of size 33
+- 0    attacker win chance,
+-  1: 8 attacker INT survival chance,
+-  9:12 attacker CRU survival chance,
+- 13:14 attacker DRE survival chance,
+- 15:22 defender INT survival chance,
+- 23:26 defender CRU survival chance,
+- 27:28 defender DRE survival chance,
+- 29:32 defender SBA survival chance.
+
+That function may be used through the python helper functions in `eclipseCpp_interface.py`, or any language that can call C functions.
+
+### boost_module
 Exposes C++ code to Python using the BOOST library.
+This is isn't used currently as it was too hard to make BOOST work on the webseite server.
+It might be reimplemented in a near future.
 
-For now it only provides a `BattleBuilder` class, that, when instanced, allows a python user to enter ships, one at a time, as well as battle modifiers, and can then compute the battle result using the above C++ algorithm.
+The file provides a `BattleBuilder` class, that, when instanced, allows a python user to enter ships, one at a time, as well as battle modifiers, and can then compute the battle result using the above C++ algorithm.
 
 Call `BattleBuilder.help()` for details.
 
